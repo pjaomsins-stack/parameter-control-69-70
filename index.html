@@ -228,6 +228,11 @@ main.wrap{max-width:1240px;width:100%}
 .user span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .user button{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:12px}
 .user .role{font-size:11px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.2)}
+.htab td.better{color:var(--ok);font-weight:700}.htab td.worse{color:var(--bad);font-weight:700}
+.htab td.src small{color:var(--ink3)}
+.imb-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.imb-frame{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.imb-frame iframe{display:block;width:100%;height:max(720px,calc(100vh - 170px));border:0;background:#fff}
 /* params grid */
 .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .chip{border:1px solid var(--line);background:var(--surface);padding:6px 13px;border-radius:999px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink2);display:inline-flex;gap:7px;align-items:center}
@@ -338,7 +343,7 @@ legend{font-weight:700;padding:0 6px}
       <p class="dept">KBS Sugar แผนกวิเคราะห์และกลยุทธ์</p>
     </div>
   </div>
-  <p class="sb-note">ฤดูหีบ 69/70 ใช้เป้าหมายและค่าสะสมฤดู 68/69 เป็นจุดตั้งต้น พยากรณ์ล่วงหน้า 7–14 วัน</p>
+  <p class="sb-note">ฤดูหีบ 69/70 (รอเปิดหีบ) ข้อมูลย้อนหลังฤดู 67/68 และ 68/69 พยากรณ์ล่วงหน้า 7–14 วันเมื่อเริ่มหีบ</p>
   <div class="user" id="userBox"></div>
   <div class="sb-label">เลือกโรงงาน</div>
   <div class="fac" role="group" aria-label="เลือกโรงงาน" id="factorySeg"></div>
@@ -347,6 +352,8 @@ legend{font-weight:700;padding:0 6px}
     <button role="tab" data-tab="overview" aria-selected="true"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>ภาพรวม</button>
     <button role="tab" data-tab="params" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg>พารามิเตอร์และพยากรณ์</button>
     <button role="tab" data-tab="compare" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>เปรียบเทียบ AB / C / S</button>
+    <button role="tab" data-tab="history" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>พารามิเตอร์ย้อนหลัง</button>
+    <button role="tab" data-tab="imb" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/><path d="M9.5 15.5a2.5 2.5 0 0 0 2.5 2.5"/></svg>Imbibition</button>
     <button role="tab" data-tab="loss" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.5 6"/></svg>Loss และ Yield</button>
     <button role="tab" data-tab="data" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>บันทึกข้อมูล</button>
   </nav>
@@ -406,6 +413,32 @@ legend{font-weight:700;padding:0 6px}
     <div id="cmpTables"></div>
   </section>
 
+  <section class="panel" id="p-history" hidden>
+    <div class="box" style="margin-bottom:16px">
+      <h3>พารามิเตอร์ย้อนหลังหลายฤดู</h3>
+      <p class="sub" id="histSub">เลือกฤดูที่ต้องการดู และฤดูที่จะเทียบ ค่าที่แสดงคือค่าสะสม (todate) ทั้งฤดู เทียบกับเป้าของฤดูนี้</p>
+      <div class="form" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+        <label class="f">ฤดูที่ดู<select id="hSeason"></select></label>
+        <label class="f">เทียบกับ<select id="hCompare"></select></label>
+      </div>
+      <p class="muted" id="hNote" style="margin:10px 0 0"></p>
+    </div>
+    <div class="filters" id="hFilters"></div>
+    <div id="hTables"></div>
+  </section>
+
+  <section class="panel" id="p-imb" hidden>
+    <div class="box imb-head">
+      <div>
+        <h3>Imbibition กับ % Pol extraction และความชื้นชานอ้อย</h3>
+        <p class="sub" style="margin:0">Scatter แยกชุดหีบ A, B, C และ S ฤดู 60/61 ถึง 68/69 จากหน้า Imbibition Scatter เดิมของทีม</p>
+      </div>
+      <a class="btn ghost sm" id="imbOpen" target="_blank" rel="noopener">เปิดเต็มหน้าจอ ↗</a>
+    </div>
+    <div class="imb-frame"><iframe id="imbFrame" title="Imbibition Pol Extraction Bagasse Moisture Scatter" loading="lazy" referrerpolicy="no-referrer"></iframe></div>
+    <p class="muted" style="margin-top:8px">ข้อมูลที่กรอกหรืออัปโหลดในหน้านี้ยังไม่ถูกบันทึกลงฐานข้อมูล จะหายเมื่อรีเฟรช เหมือนการใช้งานหน้าเดิม</p>
+  </section>
+
   <section class="panel" id="p-loss" hidden>
     <div class="two">
       <div class="box">
@@ -447,9 +480,11 @@ legend{font-weight:700;padding:0 6px}
         <h3>นำเข้าจากไฟล์ CSV</h3>
         <p class="sub">หนึ่งแถวต่อหนึ่งวันต่อหนึ่งชุด คอลัมน์ <code>day</code>, <code>unit</code> (A, B, AB, C, S) แล้วตามด้วยรหัสพารามิเตอร์ในตารางด้านล่าง ส่งออกจาก Amazon QuickSight หรือ Excel แล้ววางได้เลย</p>
         <div class="row" style="margin-bottom:10px">
+          <label class="f" style="flex-direction:row;align-items:center;gap:8px">ฤดูของข้อมูล<input id="csvSeason" value="69/70" style="width:90px" aria-describedby="csvSeasonHint"></label>
           <input type="file" id="csvFile" accept=".csv,text/csv">
           <button class="btn ghost" id="tplBtn">ดาวน์โหลดแม่แบบ CSV</button>
         </div>
+        <p class="muted" id="csvSeasonHint" style="margin:0 0 8px">ใส่ 69/70 สำหรับฤดูนี้ หรือใส่ฤดูก่อน เช่น 68/69 เพื่อเก็บเป็นข้อมูลย้อนหลัง</p>
         <textarea id="csvText" placeholder="day,unit,pol_ext,tch,mill_loss&#10;1,A,96.5,620,3.8&#10;1,B,95.8,255,4.6"></textarea>
         <div class="row" style="margin-top:10px"><button class="btn" id="csvImport">นำเข้าข้อมูล</button><button class="btn ghost" id="clearBtn">ลบข้อมูลของโรงงานที่เลือก</button></div>
         <div class="msg" id="csvMsg"></div>
@@ -604,7 +639,8 @@ function fromReal(f){
   for(const k in src){ const a=new Array(n).fill(null); for(const d in src[k]){ const v=src[k][d]; if(v!=null&&isFinite(v)) a[+d-1]=+v; } series[k]=a; }
   return {n, series, source:"real"};
 }
-function getData(f){ return realCount(f)>0 ? fromReal(f) : simulate(f); }
+const REF_SEASON="68/69";
+function getData(f){ return realCount(f)>0 ? fromReal(f) : {n:0, series:{}, source:"ref"}; }
 
 /* ---------- analytics ---------- */
 function interp(v){ const a=v.slice(), idx=[]; a.forEach((x,i)=>{if(x!=null)idx.push(i);}); if(!idx.length) return a;
@@ -658,6 +694,12 @@ function analyze(p,u,raw,n){
 function analyses(f){
   if(state.cache[f]) return state.cache[f];
   const D=getData(f), list=[];
+  if(D.source==="ref"){ // ยังไม่เปิดหีบ: ใช้ค่าสะสมฤดูก่อนเป็นข้อมูลอ้างอิง
+    for(const p of P) for(const u of paramUnits(p,f)){ if(!(u in p.td)) continue; const t=p.t[u]??null, v=p.td[u], sd=sdOf(p,u), b=badness(p,t,v);
+      const status= t==null?"info": b>0?"bad":"ok";
+      list.push({p,u,y:[],t,n:0,sd,nobs:0,insufficient:true,ref:true,todate:v,status,score: status==="bad"?(2+Math.min(3,b/sd))*(p.loss?1.4:1):0}); }
+    return state.cache[f]={D,list};
+  }
   for(const p of P) for(const u of paramUnits(p,f)){ const s=D.series[`${p.id}|${u}`]; if(!s) continue; list.push(analyze(p,u,s,D.n)); }
   return state.cache[f]={D,list};
 }
@@ -669,6 +711,7 @@ function lossParts(f){
   else mill=g("mill_loss",f);
   const parts={mill, fc:g("fc_loss",f), mol:g("mol_loss",f), undet:g("undet_loss",f)};
   parts.total=["mill","fc","mol","undet"].reduce((s,k)=>s+(parts[k]||0),0);
+  if(analyses(f).D.source==="ref"){ const RT={AB:23.88,C:17.16,S:20.56}; parts.total=RT[f]; } // Total loss todate ตามรายงานฤดู 68/69
   return parts;
 }
 
@@ -747,14 +790,14 @@ function renderHero(){
 function renderBanner(){
   const f=state.factory, n=realCount(f), b=$("#banner");
   if(n>0){ const D=analyses(f).D; b.className="banner real"; b.innerHTML=`<span class="dot s-ok" style="margin-top:6px"></span><div>โรงงาน <b>${f}</b> ใช้ข้อมูลจริงที่บันทึกไว้ ${n.toLocaleString("th-TH")} ค่า ถึงวันหีบที่ ${D.n} ข้อมูลนี้ทุกคนที่เปิดหน้านี้เห็นร่วมกันและอัปเดตทันที</div>`; }
-  else { b.className="banner"; b.innerHTML=`<span class="dot s-watch" style="margin-top:6px"></span><div><b>กำลังแสดงข้อมูลจำลอง</b> สร้างให้ค่าเฉลี่ยตรงกับค่าสะสมฤดู 68/69 ของโรงงาน ${f} เพื่อให้เห็นการทำงานของการพยากรณ์ ${state.dbReady?`<button class="linkbtn" id="goData">นำเข้าข้อมูลจริง</button> เพื่อเริ่มใช้งาน`:"ล็อกอินเพื่อใช้ข้อมูลจริง"}</div>`;
+  else { b.className="banner"; b.innerHTML=`<span class="dot s-watch" style="margin-top:6px"></span><div><b>ฤดูหีบ ${SEASON} ยังไม่เปิดหีบ</b> ตอนนี้แสดงค่าสะสมฤดู ${REF_SEASON} ของโรงงาน ${f} เป็นข้อมูลอ้างอิง เมื่อเปิดหีบและ${state.dbReady?`<button class="linkbtn" id="goData">นำเข้าข้อมูลฤดู ${SEASON}</button>`:"นำเข้าข้อมูล"} ระบบจะเปลี่ยนเป็นข้อมูลฤดูนี้และเริ่มพยากรณ์ให้เอง</div>`;
     const g=$("#goData"); if(g) g.onclick=()=>setTab("data"); }
 }
 
 /* ---------- overview ---------- */
 function renderOverview(){
   const f=state.factory, list=analyses(f).list.filter(a=>a.status!=="ok"&&a.status!=="info").sort((a,b)=>b.score-a.score).slice(0,10);
-  let h=`<div class="prow head"><span></span><span>พารามิเตอร์</span><span class="v">เป้า</span><span class="v hide-s">สะสม</span><span class="v hide-s">7 วันล่าสุด</span><span class="v">พยากรณ์ 7 วัน</span><span></span></div>`;
+  let h=`<div class="prow head"><span></span><span>พารามิเตอร์</span><span class="v">เป้า</span><span class="v hide-s" id="plCum">สะสม</span><span class="v hide-s">7 วันล่าสุด</span><span class="v">พยากรณ์ 7 วัน</span><span></span></div>`;
   if(!list.length) h+=`<div class="empty">ทุกพารามิเตอร์ของโรงงาน ${f} อยู่ในเป้าและไม่มีแนวโน้มหลุดเป้าใน 14 วัน</div>`;
   for(const a of list){
     const lab=unitLabel(a.u);
@@ -763,10 +806,11 @@ function renderOverview(){
       <span class="nm">${esc(a.p.name)}<small><span class="pill ${a.status}" style="margin-right:6px">${a.status==="bad"?"หลุดเป้า":"เฝ้าระวัง"}</span>${ST[a.p.st].name}${lab?" "+lab:""}</small></span>
       <span class="v">${tgtText(a.p,a.t)}</span>
       <span class="v hide-s">${fmt(a.todate,a.p.dec)}</span>
-      <span class="v hide-s">${fmt(a.last7,a.p.dec)}</span>
-      <span class="v">${fmt(a.fc[6].m,a.p.dec)}<small>${a.dtb?`หลุดใน ~${a.dtb} วัน`:`โอกาสหลุด ${Math.round(a.risk7*100)}%`}</small></span>
+      <span class="v hide-s">${a.ref?"–":fmt(a.last7,a.p.dec)}</span>
+      <span class="v">${a.ref?`–<small>รอข้อมูลฤดู ${SEASON}</small>`:`${fmt(a.fc[6].m,a.p.dec)}<small>${a.dtb?`หลุดใน ~${a.dtb} วัน`:`โอกาสหลุด ${Math.round(a.risk7*100)}%`}</small>`}</span>
       <span class="trend" style="color:${trendColor(a)}" title="แนวโน้ม 14 วัน">${trendArrow(a)}</span></button>`;
   }
+  if(analyses(f).D.source==="ref") h=h.replace('id="plCum">สะสม<',`id="plCum">สะสม ${REF_SEASON}<`).replace(`ทุกพารามิเตอร์ของโรงงาน ${f} อยู่ในเป้าและไม่มีแนวโน้มหลุดเป้าใน 14 วัน`,`ค่าสะสมฤดู ${REF_SEASON} ของโรงงาน ${f} อยู่ในเป้าทุกพารามิเตอร์`);
   $("#plist").innerHTML=h;
   $("#plist").querySelectorAll("button.prow").forEach(b=>b.onclick=()=>openDetail(b.dataset.k));
   renderSaved();
@@ -801,8 +845,8 @@ function renderParams(){
     for(const a of l){ const lab=unitLabel(a.u), sc=a.status;
       h+=`<button class="card" data-k="${a.p.id}|${a.u}" style="border-left-color:var(${sc==="bad"?"--bad":sc==="watch"?"--watch":sc==="ok"?"--ok":"--line"})">
         <div class="ct"><b>${esc(a.p.name)}<small>${lab?lab+" ":""}${a.p.u}</small></b><span class="pill ${sc}">${sc==="bad"?"หลุดเป้า":sc==="watch"?"เฝ้าระวัง":sc==="ok"?"ในเป้า":"ไม่มีเป้า"}</span></div>
-        <div class="val">${fmt(a.todate,a.p.dec)}<small>สะสม, เป้า ${tgtText(a.p,a.t)}</small></div>
-        ${a.insufficient?`<div class="fc">ข้อมูลยังไม่พอพยากรณ์ (ต้องมีอย่างน้อย 8 วัน)</div>`:`${spark(a)}<div class="fc">พยากรณ์ 7 วัน ${fmt(a.fc[6].m,a.p.dec)} ${a.t!=null?`, โอกาสหลุดเป้า ${Math.round(a.risk7*100)}%`:""} <span style="color:${trendColor(a)}">${trendArrow(a)}</span></div>`}
+        <div class="val">${fmt(a.todate,a.p.dec)}<small>${a.ref?`สะสมฤดู ${REF_SEASON}`:"สะสม"}, เป้า ${tgtText(a.p,a.t)}</small></div>
+        ${a.insufficient?`<div class="fc">${a.ref?`รอข้อมูลรายวันฤดู ${SEASON} เพื่อเริ่มพยากรณ์`:"ข้อมูลยังไม่พอพยากรณ์ (ต้องมีอย่างน้อย 8 วัน)"}</div>`:`${spark(a)}<div class="fc">พยากรณ์ 7 วัน ${fmt(a.fc[6].m,a.p.dec)} ${a.t!=null?`, โอกาสหลุดเป้า ${Math.round(a.risk7*100)}%`:""} <span style="color:${trendColor(a)}">${trendArrow(a)}</span></div>`}
       </button>`; }
     h+=`</div></div>`; }
   $("#paramSections").innerHTML=h;
@@ -815,7 +859,8 @@ function openDetail(k){
   $("#dlgTitle").textContent=p.name+(lab?` (${lab})`:"");
   $("#dlgSub").textContent=`${ST[p.st].full}, โรงงาน ${state.factory}, หน่วย ${p.u}, เป้า ${tgtText(p,a.t)}`;
   let h="";
-  if(a.insufficient){ h=`<p>มีข้อมูล ${a.nobs} วัน ต้องมีอย่างน้อย 8 วันจึงจะพยากรณ์ได้</p>`; }
+  if(a.ref){ h=`<div class="stats"><div><small>สะสมฤดู ${REF_SEASON}</small><b>${fmt(a.todate,p.dec)}</b></div><div><small>เป้า</small><b>${tgtText(p,a.t)}</b></div><div><small>สถานะเทียบเป้า</small><b>${a.status==="bad"?"หลุดเป้า":a.status==="ok"?"ในเป้า":"ไม่มีเป้า"}</b></div></div><p class="muted">ฤดู ${SEASON} ยังไม่เปิดหีบ กราฟและพยากรณ์จะเริ่มเมื่อมีข้อมูลรายวันอย่างน้อย 8 วัน ดูค่าฤดูก่อน ๆ ได้ในแท็บพารามิเตอร์ย้อนหลัง</p>`; }
+  else if(a.insufficient){ h=`<p>มีข้อมูล ${a.nobs} วัน ต้องมีอย่างน้อย 8 วันจึงจะพยากรณ์ได้</p>`; }
   else {
     h+=`<div class="chartbox"><canvas id="dchart" aria-label="กราฟข้อมูลและพยากรณ์"></canvas></div>
     <div class="stats">
@@ -926,9 +971,14 @@ $("#entryDay").oninput=e=>e.target.dataset.touched=1;
 
 const TS=()=>firebase.firestore.FieldValue.serverTimestamp();
 const dayRef=(f,day)=>db.collection("factories").doc(f).collection("days").doc(String(day));
-async function writeDays(updates){ // updates: {f:{key:{day:val}}}
+const sid = s => String(s).replace(/\D/g,"");
+const histRef=(season,f)=>db.collection("history").doc(`${sid(season)}_${f}`);
+async function writeDays(updates, season=SEASON){ // updates: {f:{key:{day:val}}}
+  const past = season!==SEASON;
+  if(past) for(const f in updates) if(Object.keys(updates[f]).length) await histRef(season,f).set({season,factory:f,updatedAt:TS()},{merge:true});
+  const ref=(f,d)=> past ? histRef(season,f).collection("days").doc(String(d)) : dayRef(f,d);
   const byDay=[]; for(const f in updates){ const perDay={}; for(const k in updates[f]) for(const d in updates[f][k]) ((perDay[d] ||= {}))[k]=updates[f][k][d]; for(const d in perDay) byDay.push([f,+d,perDay[d]]); }
-  for(let i=0;i<byDay.length;i+=400){ const b=db.batch(); for(const [f,d,vals] of byDay.slice(i,i+400)) b.set(dayRef(f,d),{day:d,values:vals,updatedAt:TS()},{merge:true}); await b.commit(); }
+  for(let i=0;i<byDay.length;i+=400){ const b=db.batch(); for(const [f,d,vals] of byDay.slice(i,i+400)) b.set(ref(f,d),{day:d,values:vals,updatedAt:TS()},{merge:true}); await b.commit(); }
   return byDay.length;
 }
 const errText = e => e&&e.code==="permission-denied" ? "บัญชีนี้ไม่มีสิทธิ์แก้ไขข้อมูล" : "บันทึกไม่สำเร็จ ลองอีกครั้ง";
@@ -959,9 +1009,11 @@ $("#csvFile").onchange=e=>{ const file=e.target.files[0]; if(!file) return; cons
 $("#csvImport").onclick=async()=>{
   const msg=$("#csvMsg"); let res; try{ res=parseCSV($("#csvText").value); }catch(e){ msg.className="msg err"; msg.textContent=e.message; return; }
   if(!res.cnt){ msg.className="msg err"; msg.textContent="ไม่พบค่าตัวเลขที่ตรงกับรหัสพารามิเตอร์"; return; }
+  const season=($("#csvSeason").value||SEASON).trim();
+  if(!/^\d{2}\/\d{2}$/.test(season)){ msg.className="msg err"; msg.textContent="ใส่ฤดูในรูปแบบ 68/69"; return; }
   $("#csvImport").disabled=true; const done=[];
-  try{ for(const f of ["AB","C","S"]) if(Object.keys(res.upd[f]).length) done.push(f); await writeDays(res.upd);
-    msg.className="msg good"; msg.textContent=`นำเข้าแล้ว ${res.cnt.toLocaleString("th-TH")} ค่า (โรงงาน ${done.join(", ")})${res.bad?`, ข้าม ${res.bad} แถวที่ day/unit ไม่ถูกต้อง`:""}${res.unknown.length?`, ไม่รู้จักคอลัมน์: ${esc(res.unknown.slice(0,6).join(", "))}`:""}`; }
+  try{ for(const f of ["AB","C","S"]) if(Object.keys(res.upd[f]).length) done.push(f); await writeDays(res.upd, season); if(season!==SEASON){ delete state.hist.cache[`${sid(season)}_AB`]; delete state.hist.cache[`${sid(season)}_C`]; delete state.hist.cache[`${sid(season)}_S`]; loadHistIndex(); }
+    msg.className="msg good"; msg.textContent=`นำเข้าแล้ว ${res.cnt.toLocaleString("th-TH")} ค่า ฤดู ${season} (โรงงาน ${done.join(", ")})${res.bad?`, ข้าม ${res.bad} แถวที่ day/unit ไม่ถูกต้อง`:""}${res.unknown.length?`, ไม่รู้จักคอลัมน์: ${esc(res.unknown.slice(0,6).join(", "))}`:""}`; }
   catch(e){ msg.className="msg err"; msg.textContent=errText(e); }
   $("#csvImport").disabled=false;
 };
@@ -982,6 +1034,26 @@ function mdLite(t){ const lines=esc(t).split("\n"); let h="",ul=false; const clo
     else if(!l.trim()) close(); else {close();h+=`<p>${l}</p>`;} } close(); return h; }
 function buildPrompt(f){
   const {D,list}=analyses(f), L=lossParts(f);
+  if(D.source==="ref"){
+    const R7=REPORT["67/68"]||{};
+    const rows=list.map(a=>[ST[a.p.st].name,a.p.name,a.u,a.p.dir==="max"?"ยิ่งต่ำยิ่งดี":a.p.dir==="min"?"ยิ่งสูงยิ่งดี":a.p.dir==="range"?"ควรอยู่ในช่วง":"-",tgtText(a.p,a.t),fmt(a.todate,a.p.dec),R7[`${a.p.id}|${a.u}`]!=null?fmt(R7[`${a.p.id}|${a.u}`],a.p.dec):"-",a.status].join(" | "));
+    return `คุณเป็นวิศวกรกระบวนการอาวุโสของโรงงานน้ำตาลทรายดิบในประเทศไทย ฤดูหีบ ${SEASON} ของโรงงาน ${f} ยังไม่เปิดหีบ ข้อมูลด้านล่างคือค่าสะสมทั้งฤดู ${REF_SEASON} (ข้อมูลจริงจากรายงาน) และค่าเฉลี่ยฤดู 67/68 เท่าที่มี
+โรงงาน AB มีชุดลูกหีบ A และ B แยกกัน ส่วนสถานีอื่นรวมเป็น AB
+คอลัมน์: สถานี | พารามิเตอร์ | ชุด | ทิศทางที่ดี | เป้า | สะสม ${REF_SEASON} | เฉลี่ย 67/68 | สถานะเทียบเป้า
+${rows.join("\n")}
+Loss สะสมฤดู ${REF_SEASON} (% pol ในอ้อย): milling ${fmt(L.mill)}, กากตะกอน ${fmt(L.fc)}, กากน้ำตาล ${fmt(L.mol)}, ไม่ทราบสาเหตุ ${fmt(L.undet)}, รวม ${fmt(L.total)}
+เปรียบเทียบ undetermined loss ฤดู ${REF_SEASON}: AB ${fmt(lossParts("AB").undet)}, C ${fmt(lossParts("C").undet)}, S ${fmt(lossParts("S").undet)}
+
+ตอบเป็นภาษาไทย กระชับ ใช้ markdown อย่างง่าย (## หัวข้อ, bullet, **ตัวหนา**) ห้ามใช้ตาราง ไม่เกิน 380 คำ:
+## บทเรียนจากฤดู ${REF_SEASON}
+2-3 ประโยค
+## 3 เรื่องที่ควรเตรียมก่อนเปิดหีบ ${SEASON}
+แต่ละข้อ: ปัญหาที่พบในฤดูก่อน, สาเหตุที่เป็นไปได้โดยอ้างความสัมพันธ์ระหว่างพารามิเตอร์ในตาราง, สิ่งที่ควรเตรียมหรือตรวจก่อนเปิดหีบ
+## พารามิเตอร์ที่ควรเฝ้าระวังตั้งแต่สัปดาห์แรก
+## โอกาสเพิ่ม yield ในฤดู ${SEASON}
+ประเมินเชิงตัวเลขจาก loss ที่ลดได้จริง
+อย่าแต่งตัวเลขที่ไม่มีในข้อมูล`;
+  }
   const rows=list.filter(a=>!a.insufficient).map(a=>[ST[a.p.st].name,a.p.name,a.u,a.p.dir==="max"?"ยิ่งต่ำยิ่งดี":a.p.dir==="min"?"ยิ่งสูงยิ่งดี":a.p.dir==="range"?"ควรอยู่ในช่วง":"-",tgtText(a.p,a.t),fmt(a.todate,a.p.dec),fmt(a.last7,a.p.dec),(a.wk>=0?"+":"")+fmt(a.wk,a.p.dec),fmt(a.fc[6].m,a.p.dec),a.risk7==null?"-":Math.round(a.risk7*100)+"%",a.status,a.flags.join("; ")||"-"].join(" | "));
   return `คุณเป็นวิศวกรกระบวนการอาวุโสของโรงงานน้ำตาลทรายดิบในประเทศไทย วิเคราะห์ข้อมูลโรงงาน ${f} ฤดูหีบ ${SEASON} ถึงวันหีบที่ ${D.n}${D.source==="demo"?" (หมายเหตุ: ข้อมูลนี้เป็นข้อมูลจำลองเพื่อสาธิต ให้บอกผู้ใช้สั้นๆ ตอนต้น)":""}
 โรงงาน AB มีชุดลูกหีบ A และ B แยกกัน ส่วนสถานีอื่นรวมเป็น AB
@@ -1004,7 +1076,7 @@ Loss สะสม (% pol ในอ้อย): milling ${fmt(L.mill)}, กาก�
 state.saved=[];
 function makeRecord(f,text,via){
   const {D,list}=analyses(f), L=lossParts(f);
-  const rows=list.filter(a=>a.status==="bad"||a.status==="watch").sort((a,b)=>b.score-a.score).slice(0,10).map(a=>({st:ST[a.p.st].name,name:a.p.name,unit:unitLabel(a.u),status:a.status,target:tgtText(a.p,a.t),todate:fmt(a.todate,a.p.dec),last7:fmt(a.last7,a.p.dec),fc7:fmt(a.fc[6].m,a.p.dec),risk:a.risk7==null?"–":Math.round(a.risk7*100)+"%"}));
+  const rows=list.filter(a=>a.status==="bad"||a.status==="watch").sort((a,b)=>b.score-a.score).slice(0,10).map(a=>({st:ST[a.p.st].name,name:a.p.name,unit:unitLabel(a.u),status:a.status,target:tgtText(a.p,a.t),todate:fmt(a.todate,a.p.dec),last7:a.ref?"–":fmt(a.last7,a.p.dec),fc7:a.ref?"–":fmt(a.fc[6].m,a.p.dec),risk:a.ref||a.risk7==null?"–":Math.round(a.risk7*100)+"%"}));
   return {factory:f,day:D.n,source:D.source,via,text,createdAt:new Date().toISOString(),rows,loss:{mill:L.mill,fc:L.fc,mol:L.mol,undet:L.undet,total:L.total}};
 }
 function thDate(iso){ try{ return new Date(iso).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"}); }catch(e){ return iso; } }
@@ -1121,10 +1193,10 @@ state.cmpStation="all";
 const UNIT_ORDER=["A","B","AB","C","S"];
 const UCOL={A:"#1C6FD6",B:"#0EA5C6",AB:"#1C6FD6",C:"#16A34A",S:"#D97706"};
 const unitHead=u=>u==="A"?"AB ชุด A":u==="B"?"AB ชุด B":u;
-function margin(a){ if(!a||a.insufficient||a.todate==null) return null; if(a.t==null) return a.p.dir==="none"? -a.todate : null; const b=badness(a.p,a.t,a.todate); const scale=Math.abs(Array.isArray(a.t)?(a.t[1]-a.t[0]):a.t)||1; return -b/scale; }
+function margin(a){ if(!a||(a.insufficient&&!a.ref)||a.todate==null) return null; if(a.t==null) return a.p.dir==="none"? -a.todate : null; const b=badness(a.p,a.t,a.todate); const scale=Math.abs(Array.isArray(a.t)?(a.t[1]-a.t[0]):a.t)||1; return -b/scale; }
 function renderCompare(){
   let sh=""; for(const g of ["AB","C","S"]){ const {list}=analyses(g), L=lossParts(g), c=s=>list.filter(a=>a.status===s).length;
-    sh+=`<div class="box"><h4>โรงงาน ${g}${realCount(g)?"":` <span class="tag demo">ข้อมูลจำลอง</span>`}</h4><div class="big">${fmt(L.total)}%</div><div class="muted">Total loss</div>
+    sh+=`<div class="box"><h4>โรงงาน ${g}${realCount(g)?"":` <span class="tag demo">ค่าฤดู ${REF_SEASON}</span>`}</h4><div class="big">${fmt(L.total)}%</div><div class="muted">Total loss</div>
     <div class="row" style="margin-top:8px;gap:6px"><span class="pill bad">หลุด ${c("bad")}</span><span class="pill watch">เฝ้า ${c("watch")}</span><span class="pill ok">ในเป้า ${c("ok")}</span></div></div>`; }
   $("#cmpSum").innerHTML=sh;
   let fh=`<button class="chip" data-st="all" aria-pressed="${state.cmpStation==="all"}">ทุกสถานี</button>`;
@@ -1165,9 +1237,96 @@ function openCompare(pid){
     plugins:{legend:{labels:{color:ink,boxWidth:14,filter:i=>!i.text.startsWith("_")}},tooltip:{filter:i=>i.raw!=null&&!i.dataset.label.startsWith("_"),callbacks:{title:it=>`วันหีบที่ ${it[0].label}`,label:c=>`${c.dataset.label}: ${fmt(c.raw,p.dec)}`}}},
     scales:{x:{ticks:{color:ink,maxTicksLimit:12},grid:{color:line},title:{display:true,text:"วันหีบ",color:ink}},y:{ticks:{color:ink},grid:{color:line}}}}});
 }
+
+/* ---------- history seasons ---------- */
+// ค่าสะสมจากรายงาน Control Parameter Tracking (PDF) ที่มีตัวเลขในตาราง
+const REPORT = {
+  "68/69": Object.fromEntries(P.flatMap(p=>Object.entries(p.td).map(([u,v])=>[`${p.id}|${u}`,v])))
+};
+// 67/68: รายงานไม่มีตารางตัวเลข ใช้เฉพาะเส้นที่ระบุว่า "Avg 67/68" ในกราฟ
+REPORT["67/68"]={"syr_brix|AB":64.01,"syr_brix|C":61.48,"turb|AB":4.58,"turb|C":4.65,"fc_loss|AB":0.34,"fc_loss|C":0.3,"fc_loss|S":0.33,
+  "ph_drop|AB":0.83,"ph_drop|C":0.96,"ph_drop|S":0.48,"a_cont_cc|C":58.64};
+const REPORT_SRC={"67/68":"เส้น Avg"};
+state.hist={index:{}, cache:{}, season:"67/68", compare:"68/69", station:"all"};
+const seasonKey = s => { const m=String(s).match(/(\d{2})\/(\d{2})/); return m?+m[1]:0; };
+function allSeasons(f){ const s=new Set(Object.keys(REPORT)); for(const k in state.hist.index) if(k.endsWith("_"+f)) s.add(state.hist.index[k]); s.delete(SEASON); return [...s].sort((a,b)=>seasonKey(b)-seasonKey(a)); }
+async function loadHistIndex(){ if(!db) return; try{ const s=await db.collection("history").get(); const idx={}; s.forEach(d=>{ const x=d.data()||{}; if(x.season) idx[d.id]=x.season; }); state.hist.index=idx; if(state.tab==="history") renderHistory(); }catch(e){} }
+async function loadHistDaily(season,f){
+  const id=`${sid(season)}_${f}`; if(!(id in state.hist.index)||!db) return null; if(state.hist.cache[id]) return state.hist.cache[id];
+  const s=await db.collection("history").doc(id).collection("days").get(); const src={};
+  s.forEach(d=>{ const x=d.data()||{}, day=x.day||+d.id; for(const k in (x.values||{})){ const v=x.values[k]; if(v!=null&&isFinite(v)&&v!==0) ((src[k] ||= {}))[day]=+v; } });
+  let n=0; for(const k in src) for(const d in src[k]) n=Math.max(n,+d);
+  const series={}; for(const k in src){ const a=new Array(n).fill(null); for(const d in src[k]) a[+d-1]=src[k][d]; series[k]=a; }
+  return state.hist.cache[id]={n,series};
+}
+function seasonValues(season,f){ // {key:{v, src}}
+  const out={};
+  if(season===SEASON){ if(analyses(f).D.source==="ref") return out; for(const a of analyses(f).list) out[`${a.p.id}|${a.u}`]={v:a.todate,src:"รายวัน",series:a.y}; return out; }
+  const R=REPORT[season]||{}; for(const k in R) if(FACT[f].units.includes(k.split("|")[1])) out[k]={v:R[k],src:REPORT_SRC[season]||"รายงาน"};
+  const H=state.hist.cache[`${sid(season)}_${f}`];
+  if(H) for(const k in H.series){ const obs=H.series[k].filter(v=>v!=null); if(obs.length) out[k]={v:mean(obs),src:"รายวัน",series:H.series[k]}; }
+  return out;
+}
+function better(p,a,b){ if(a==null||b==null||p.dir==="range") return 0; const d=b-a; if(Math.abs(d)<1e-9) return 0; const good = (p.dir==="min") ? d>0 : d<0; return good?1:-1; }
+async function renderHistory(){
+  const f=state.factory, H=state.hist, list=allSeasons(f);
+  if(!list.includes(H.season)) H.season=list[0];
+  const pending = analyses(f).D.source==="ref";
+  const cmpOpts=[[SEASON,`${SEASON} (ฤดูนี้${pending?", รอเปิดหีบ":""})`],...list.filter(s=>s!==H.season).map(s=>[s,s]),["all","แสดงทุกฤดูพร้อมกัน"]];
+  if(!cmpOpts.some(o=>o[0]===H.compare)) H.compare=SEASON;
+  $("#hSeason").innerHTML=list.map(s=>`<option value="${s}" ${s===H.season?"selected":""}>${s}</option>`).join("");
+  $("#hCompare").innerHTML=cmpOpts.map(([v,l])=>`<option value="${v}" ${v===H.compare?"selected":""}>${l}</option>`).join("");
+  $("#hSeason").onchange=e=>{H.season=e.target.value;renderHistory();};
+  $("#hCompare").onchange=e=>{H.compare=e.target.value;renderHistory();};
+  const need = H.compare==="all" ? list : [H.season].concat(H.compare!==SEASON?[H.compare]:[]);
+  $("#hTables").innerHTML=`<p class="muted">กำลังโหลดข้อมูลย้อนหลัง…</p>`;
+  try{ await Promise.all(need.map(s=>loadHistDaily(s,f))); }catch(e){}
+  const cols = H.compare==="all" ? [...list].reverse().concat([SEASON]) : [H.season, H.compare];
+  const vals = Object.fromEntries(cols.map(s=>[s,seasonValues(s,f)]));
+  const srcs = cols.map(s=>{ const v=Object.values(vals[s]); const d=v.some(x=>x.src==="รายวัน"), r=v.some(x=>x.src==="รายงาน"||x.src==="เส้น Avg"), j=v.some(x=>x.src==="จำลอง"); return `${s}: ${s===SEASON&&pending?"รอเปิดหีบ":d?"ข้อมูลรายวัน":r?(s==="67/68"?"ค่าเฉลี่ยจากเส้นอ้างอิงในรายงาน":"ค่าสะสมจากรายงาน PDF"):"ไม่มีข้อมูล"}`; });
+  $("#hNote").textContent=`โรงงาน ${f}  •  ${srcs.join("  •  ")}${cols.includes("67/68")?"  •  67/68 มีเฉพาะสถานีทำใสและระเหย นำเข้าข้อมูลรายวันเพื่อให้ครบ":""}`;
+  let fh=`<button class="chip" data-st="all" aria-pressed="${H.station==="all"}">ทุกสถานี</button>`;
+  for(const st of ["M","E","V","C"]) fh+=`<button class="chip" data-st="${st}" aria-pressed="${H.station===st}"><span class="sw" style="background:var(${ST[st].c})"></span>${ST[st].n} ${ST[st].name}</button>`;
+  $("#hFilters").innerHTML=fh; $("#hFilters").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{H.station=c.dataset.st;renderHistory();});
+  const two = H.compare!=="all";
+  let h="";
+  for(const st of ["M","E","V","C"]){ if(H.station!=="all"&&H.station!==st) continue;
+    const rows=[]; for(const p of P.filter(p=>p.st===st)) for(const u of FACT[f].units){ const k=`${p.id}|${u}`; if(!(u in p.td)) continue; rows.push({p,u,k}); }
+    if(!rows.length) continue;
+    h+=`<div class="stsec"><h3><span class="stno" style="background:var(${ST[st].c})">${ST[st].n}</span>${ST[st].full}</h3><div class="scroll"><table class="ctab htab"><tr><th>พารามิเตอร์</th><th>เป้าฤดูนี้</th>${cols.map(s=>`<th>${s}${s===SEASON?(pending?" (รอเปิดหีบ)":" (ฤดูนี้)"):""}</th>`).join("")}${two?"<th>เปลี่ยนแปลง</th>":""}</tr>`;
+    for(const {p,u,k} of rows){ const t=p.t[u]??null;
+      const cells=cols.map(s=>{ const x=vals[s][k]; if(!x||x.v==null) return `<td class="muted">${s===SEASON&&pending?"<small>รอเปิดหีบ</small>":"–"}</td>`; const b=badness(p,t,x.v); const cls=t==null?"":b>0?"bad":"ok"; return `<td class="${cls}"><b>${fmt(x.v,p.dec)}</b><small>${x.src}</small></td>`; }).join("");
+      let diff=""; if(two){ const a=vals[cols[0]][k]?.v, b=vals[cols[1]][k]?.v; if(a!=null&&b!=null){ const bt=better(p,a,b); diff=`<td class="${bt>0?"better":bt<0?"worse":""}">${b-a>=0?"+":""}${fmt(b-a,p.dec)}<small>${bt>0?"ดีขึ้น":bt<0?"แย่ลง":"เท่าเดิม"}</small></td>`; } else diff=`<td class="muted">–</td>`; }
+      h+=`<tr class="r" data-k="${k}" tabindex="0"><td><div class="pn">${esc(p.name)}<small>${unitLabel(u)?unitLabel(u)+", ":""}${p.u}</small></div></td><td>${tgtText(p,t)}</td>${cells}${diff}</tr>`; }
+    h+=`</table></div></div>`; }
+  $("#hTables").innerHTML=h||`<p class="muted">ไม่มีข้อมูล</p>`;
+  $("#hTables").querySelectorAll("tr.r").forEach(r=>{ const go=()=>openHistChart(r.dataset.k,cols,vals); r.onclick=go; r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();go();}}; });
+}
+const SCOL=["#1C6FD6","#D97706","#16A34A","#9333EA","#DC2626","#0EA5C6","#64748B"];
+function openHistChart(k,cols,vals){
+  const [pid,u]=k.split("|"), p=PBY[pid], t=p.t[u]??null;
+  const withSeries=cols.filter(s=>vals[s][k]&&vals[s][k].series);
+  $("#dlgTitle").textContent=`${p.name}${unitLabel(u)?" ("+unitLabel(u)+")":""} ย้อนหลัง`;
+  $("#dlgSub").textContent=`โรงงาน ${state.factory}, หน่วย ${p.u}, เป้าฤดูนี้ ${tgtText(p,t)}, เส้นคือค่าเฉลี่ย 7 วันตามวันหีบ`;
+  const rows=cols.map((s,i)=>{ const x=vals[s][k]; return `<tr><td>${s}${s===SEASON?" (ฤดูนี้)":""}</td><td>${x?fmt(x.v,p.dec):"–"}</td><td>${x?x.src:"ไม่มีข้อมูล"}</td></tr>`; }).join("");
+  $("#dlgBody").innerHTML=`${withSeries.length?`<div class="chartbox"><canvas id="hchart"></canvas></div>`:`<p class="muted">ฤดูที่เลือกมีเฉพาะค่าสะสมจากรายงาน จึงยังแสดงกราฟรายวันไม่ได้ นำเข้าข้อมูลรายวันของฤดูนั้นในแท็บ "บันทึกข้อมูล" (ใส่ฤดู เช่น 68/69) เพื่อดูกราฟเทียบ</p>`}
+    <div class="scroll" style="margin-top:14px"><table class="dict num"><tr><th>ฤดู</th><th>ค่าสะสม</th><th>แหล่งข้อมูล</th></tr>${rows}</table></div>`;
+  $("#dlg").showModal();
+  if(chart){chart.destroy();chart=null;} if(!withSeries.length||typeof Chart==="undefined") return;
+  const N=Math.max(...withSeries.map(s=>vals[s][k].series.length)), labels=Array.from({length:N},(_,i)=>i+1), ink=cssv("--ink2")||"#46617F", line=cssv("--line")||"#D3E1F0";
+  const ds=withSeries.map((s,i)=>{ const y=vals[s][k].series; const ma=[]; for(let j=0;j<N;j++){ const w=y.slice(Math.max(0,j-6),j+1).filter(v=>v!=null&&v!==0); ma.push(j<y.length&&w.length>=3?mean(w):null); }
+    const c=s===SEASON?"#1C6FD6":SCOL[(i+1)%SCOL.length]; return {label:s+(s===SEASON?" (ฤดูนี้)":""),data:ma,borderColor:c,backgroundColor:c,borderWidth:s===SEASON?2.6:1.8,pointRadius:0,spanGaps:true}; });
+  (t==null?[]:Array.isArray(t)?t:[t]).forEach((tt,i)=>ds.push({label:i?"_t":"เป้าฤดูนี้",data:new Array(N).fill(tt),borderColor:cssv("--bad")||"#D23C3C",borderDash:[7,4],borderWidth:1.4,pointRadius:0}));
+  chart=new Chart($("#hchart"),{type:"line",data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{labels:{color:ink,boxWidth:14,filter:i=>!i.text.startsWith("_")}},tooltip:{filter:i=>i.raw!=null&&!i.dataset.label.startsWith("_"),callbacks:{title:it=>`วันหีบที่ ${it[0].label}`,label:c=>`${c.dataset.label}: ${fmt(c.raw,p.dec)}`}}},
+    scales:{x:{ticks:{color:ink,maxTicksLimit:12},grid:{color:line},title:{display:true,text:"วันหีบ",color:ink}},y:{ticks:{color:ink},grid:{color:line}}}}});
+}
+/* ---------- imbibition (embedded page) ---------- */
+const IMB_URL="https://pjaomsins-stack.github.io/Imbibition-Pol-Extraction-Bagasses-moisture-Scatter/";
+function renderImb(){ const f=$("#imbFrame"); if(!f.getAttribute("src")) f.src=IMB_URL; $("#imbOpen").href=IMB_URL; }
 /* ---------- navigation ---------- */
-function setTab(t){ state.tab=t; document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="p-"+t); renderTab(); if(t==="params"||t==="compare") $("#p-"+t).scrollIntoView?.({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }
-function renderTab(){ ({overview:renderOverview,params:renderParams,compare:renderCompare,loss:renderLoss,data:renderData})[state.tab](); }
+function setTab(t){ state.tab=t; document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="p-"+t); renderTab(); if(t==="params"||t==="compare"||t==="history") $("#p-"+t).scrollIntoView?.({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }
+function renderTab(){ ({overview:renderOverview,params:renderParams,compare:renderCompare,history:renderHistory,imb:renderImb,loss:renderLoss,data:renderData})[state.tab](); }
 function render(){ renderFactorySeg(); renderBanner(); renderHero(); renderTab(); }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 function renderFactorySeg(){
@@ -1216,12 +1375,13 @@ else{
   // ไม่จำการล็อกอิน: ต้องใส่รหัสใหม่ทุกครั้งที่เปิดหรือรีเฟรชหน้า
   const ready = auth.setPersistence(firebase.auth.Auth.Persistence.NONE).then(()=>auth.signOut()).catch(()=>{});
   ready.then(()=>auth.onAuthStateChanged(async u=>{
-    stopListeners(); db=null; state.dbReady=false; state.canEdit=false; state.real={AB:{},C:{},S:{}}; state.saved=[]; state.cache={};
+    stopListeners(); db=null; state.dbReady=false; state.canEdit=false; state.real={AB:{},C:{},S:{}}; state.saved=[]; state.cache={}; state.hist.index={}; state.hist.cache={};
     if(!u){ $("#gate").hidden=false; renderUser(null); render(); return; }
     if(!ALLOWED.test(u.email||"")){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent=`บัญชี ${u.email} ไม่มีสิทธิ์เข้าใช้`; await auth.signOut(); return; }
     $("#gate").hidden=true; db=fdb; state.dbReady=true;
     try{ const ed=await fdb.collection("editors").doc(u.email).get(); state.canEdit=ed.exists; }catch(e){ state.canEdit=false; }
     renderUser(u);
+    loadHistIndex();
     unsubs.push(fdb.collection("analyses").orderBy("createdAt","desc").limit(90).onSnapshot(s=>{ state.saved=s.docs.map(d=>d.data()); renderSaved(); },()=>{}));
     for(const f of ["AB","C","S"]) unsubs.push(fdb.collection("factories").doc(f).collection("days").onSnapshot(s=>{
       const data={}; s.forEach(d=>{ const x=d.data()||{}, day=x.day||+d.id; for(const k in (x.values||{})){ const v=x.values[k]; if(v!=null&&isFinite(v)) ((data[k] ||= {}))[day]=+v; } });
