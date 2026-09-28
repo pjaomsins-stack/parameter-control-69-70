@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ควบคุมและพยากรณ์พารามิเตอร์ ฤดูหีบ 69/70</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8C%BE%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{
+  --bg:#EAF2FB; --surface:#FFFFFF; --surface2:#F3F8FE; --ink:#0F2A4A; --ink2:#46617F; --ink3:#7D93AE; --line:#D3E1F0;
+  --brand:#1C6FD6; --brand2:#E3EFFD; --onbrand:#FFFFFF;
+  --cane:#16877A; --steam:#2F80ED; --pan:#5B5BD6; --mol:#B06A1C;
+  --ok:#1F8A5B; --watch:#C28A00; --bad:#D23C3C; --fc:#0EA5C6; --focus:#1C6FD6;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#0B1A2E; --surface:#10233C; --surface2:#15304F; --ink:#EAF2FC; --ink2:#A9C0DB; --ink3:#7690B0; --line:#23405F;
+  --brand:#5AA2F5; --brand2:#17365A; --onbrand:#0B1A2E;
+  --cane:#4FC7B7; --steam:#6FAEF7; --pan:#9C9CF2; --mol:#E0A15C; --ok:#4FCB8E; --watch:#E8BD45; --bad:#F27B7B; --fc:#45CDE8; --focus:#5AA2F5; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0B1A2E; --surface:#10233C; --surface2:#15304F; --ink:#EAF2FC; --ink2:#A9C0DB; --ink3:#7690B0; --line:#23405F;
+  --brand:#5AA2F5; --brand2:#17365A; --onbrand:#0B1A2E;
+  --cane:#4FC7B7; --steam:#6FAEF7; --pan:#9C9CF2; --mol:#E0A15C; --ok:#4FCB8E; --watch:#E8BD45; --bad:#F27B7B; --fc:#45CDE8; --focus:#5AA2F5; color-scheme:dark;}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai","Leelawadee UI","Sukhumvit Set",Tahoma,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 20px 60px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:18px;background:linear-gradient(120deg,#1C6FD6,#3B9BF0);color:#fff;border-radius:16px;padding:20px 22px}
+.top h1{color:#fff}.top p{color:rgba(255,255,255,.88)!important}.factory-pick small{color:rgba(255,255,255,.85)!important}
+.top .seg{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35)}.top .seg button{color:#fff}.top .seg button[aria-pressed="true"]{background:#fff;color:#1C6FD6}
+.top h1{margin:0;font-size:26px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+.top p{margin:4px 0 0;color:var(--ink2);font-size:14px}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 16px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--ink2)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--onbrand)}
+.brand{display:flex;align-items:center;gap:16px}
+.logo{width:84px;height:auto;background:#fff;border-radius:14px;padding:6px 8px;box-shadow:0 4px 14px rgba(8,40,90,.18);flex:none}
+.top .dept{margin-top:2px;font-size:13px;font-weight:600;color:#fff!important;opacity:.95}
+@media (max-width:640px){.logo{width:60px;border-radius:10px;padding:4px 5px}.brand{gap:12px}}
+.factory-pick{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.factory-pick small{color:var(--ink3);font-size:12px}
+
+.banner{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px dashed var(--watch);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:14px;color:var(--ink2)}
+.banner.real{border-style:solid;border-color:var(--line)}
+.banner b{color:var(--ink)}
+.linkbtn{background:none;border:0;padding:0;color:var(--brand);text-decoration:underline;cursor:pointer;font-weight:600}
+
+/* hero process line */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:18px}
+.flow{padding:14px 10px 6px;overflow-x:auto}
+.flow svg{display:block;width:100%;min-width:720px;height:auto}
+.flow{background:radial-gradient(circle at 20% 0%,var(--brand2),transparent 60%)}
+.flow .node{cursor:pointer;transition:transform .18s ease}
+.flow .node:hover{transform:translateY(-3px)}
+.flow .node:hover rect.box{stroke:var(--brand);stroke-width:1.8}
+.flow .node:focus{outline:none}
+.flow .node:focus-visible rect.box{stroke:var(--focus);stroke-width:3}
+.pipeflow{animation:flow 1.6s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-19}}
+.side{border-left:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:14px;background:var(--brand2)}
+.side h2{margin:0;font-size:14px;font-weight:600;color:var(--ink2)}
+.bigloss{color:var(--brand);font-size:40px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.bigloss small{font-size:16px;font-weight:500;color:var(--ink2);margin-left:4px}
+.recov{font-size:14px;color:var(--ink2)}
+.cmp{width:100%;border-collapse:collapse;font-size:13px}
+.cmp td,.cmp th{padding:5px 4px;border-top:1px solid var(--line);text-align:right}
+.cmp th{font-weight:500;color:var(--ink3);text-align:right}
+.cmp td:first-child,.cmp th:first-child{text-align:left}
+.cmp tr.cur td{font-weight:700}
+
+.hero{--surface:#12233D;--surface2:#0E1C33;--ink:#EEF4FD;--ink2:#A9BEDA;--ink3:#7089AB;--line:#24406A;--brand:#6AAEFF;--brand2:#132A4A;
+  --cane:#4FD1BE;--steam:#6FB1FF;--pan:#A9A6FF;--mol:#F2AE62;--bad:#FF7F7F;--watch:#F5C451;--ok:#52D69A;
+  background:linear-gradient(135deg,#040A14 0%,#081528 55%,#0D2042 100%)!important;border-color:#1B3155!important;color:var(--ink);box-shadow:0 10px 30px rgba(4,10,20,.25)}
+.hero .flow{background:radial-gradient(ellipse at 30% -10%,rgba(80,150,255,.18),transparent 60%)}
+.hero .side{background:rgba(255,255,255,.035);border-left-color:#1B3155}
+.hero .cmp td,.hero .cmp th{border-top-color:#1F3A60}
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;cursor:pointer;color:var(--ink2);font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand)}
+.banner,.banner.real{background:linear-gradient(135deg,#040A14 0%,#081528 55%,#0D2042 100%);border:1px solid #1B3155;color:#A9BEDA;border-radius:12px}
+.banner b{color:#EEF4FD}
+.banner .linkbtn{color:#6AAEFF}
+.banner .s-watch{background:#F5C451}.banner .s-ok{background:#52D69A}
+.tabs{background:linear-gradient(135deg,#040A14 0%,#081528 55%,#0D2042 100%);border:1px solid #1B3155;border-radius:12px;padding:4px 8px 0}
+.tabs button{color:#A9BEDA;margin-bottom:0}
+.tabs button:hover{color:#EEF4FD}
+.tabs button[aria-selected="true"]{color:#FFFFFF;border-bottom-color:#6AAEFF}
+.panel[hidden]{display:none}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:18px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.box h3{margin:0 0 4px;font-size:17px;font-weight:700}
+.box .sub{margin:0 0 14px;color:var(--ink2);font-size:13.5px}
+
+/* status */
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
+.s-bad{background:var(--bad)} .s-watch{background:var(--watch)} .s-ok{background:var(--ok)} .s-info{background:var(--ink3)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
+.pill.watch{color:var(--watch);border-color:color-mix(in srgb,var(--watch) 45%,transparent)}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.pill.info{color:var(--ink3)}
+
+/* priority list */
+.plist{display:flex;flex-direction:column}
+.prow{display:grid;grid-template-columns:6px minmax(0,1.6fr) repeat(4,minmax(0,.8fr)) 28px;gap:10px;align-items:center;padding:10px 6px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;cursor:pointer;width:100%}
+.prow:hover{background:var(--brand2)}
+.prow.head{cursor:default;font-size:12px;color:var(--ink3);border-top:0;padding-top:0}
+.prow.head:hover{background:none}
+.prow .bar{align-self:stretch;border-radius:3px}
+.prow .nm{font-weight:600;line-height:1.3}
+.prow .nm small{display:block;font-weight:400;color:var(--ink3);font-size:12.5px}
+.prow .v{text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+.prow .v small{display:block;color:var(--ink3);font-size:11.5px}
+.trend{font-size:16px;text-align:center}
+.empty{padding:22px;text-align:center;color:var(--ink2)}
+
+/* AI */
+.ai-out{font-size:14.5px;line-height:1.7;max-height:560px;overflow:auto}
+.ai-out h4{margin:14px 0 4px;font-size:15px}
+.ai-out h4:first-child{margin-top:0}
+.ai-out ul{margin:4px 0 8px;padding-left:20px}
+.ai-out p{margin:4px 0}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--brand);background:var(--brand);color:var(--onbrand);text-decoration:none;padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--ink3);font-size:13px}
+
+.saved{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.saved:first-child{border-top:0}
+.saved b{display:block}
+.saved .meta{color:var(--ink3);font-size:13px}
+.saved .snip{color:var(--ink2);font-size:13.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.btn.sm{padding:6px 12px;font-size:13.5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--brand2);color:var(--brand);margin-left:6px}
+.tag.demo{background:color-mix(in srgb,var(--watch) 18%,transparent);color:var(--watch)}
+
+/* layout with sidebar */
+.app{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100%}
+.sidebar{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;height:calc(100vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;
+  background:linear-gradient(170deg,#1C6FD6 0%,#2B86EA 55%,#3B9BF0 100%);color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:10px}
+.sb-brand{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.sb-brand .logo{width:92px}
+.sidebar h1{margin:0;font-size:19px;line-height:1.3;color:#fff;font-weight:700}
+.sidebar .dept{margin:4px 0 0;font-size:13px;font-weight:600;color:rgba(255,255,255,.92)}
+.sb-note{margin:0;font-size:12.5px;color:rgba(255,255,255,.82);line-height:1.55}
+.sb-label{margin-top:10px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.75);font-weight:600}
+.fac{display:flex;flex-direction:column;gap:6px}
+.fac button{display:grid;grid-template-columns:44px 1fr;gap:2px 10px;align-items:center;text-align:left;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;border-radius:12px;padding:9px 12px;cursor:pointer}
+.fac button:hover{background:rgba(255,255,255,.18)}
+.fac button[aria-pressed="true"]{background:#fff;color:#0F2A4A;border-color:#fff;box-shadow:0 6px 16px rgba(8,40,90,.22)}
+.fac .fk{grid-row:1/3;font-size:20px;font-weight:700;text-align:center}
+.fac button[aria-pressed="true"] .fk{color:#1C6FD6}
+.fac .fl{font-size:12.5px;opacity:.9}
+.fac .fs{font-size:12px;opacity:.85;display:flex;gap:8px}
+.fac .fs i{white-space:nowrap;font-style:normal;display:inline-flex;align-items:center;gap:4px}
+.fac .fs i::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.fac .fs .b{color:#FFB3B3}.fac .fs .w{color:#FFE08A}
+.fac button[aria-pressed="true"] .fs .b{color:#D23C3C}.fac button[aria-pressed="true"] .fs .w{color:#B98200}
+.sidebar .tabs{display:flex;flex-direction:column;gap:3px;background:none;border:0;padding:0;margin:0;overflow:visible}
+.sidebar .tabs button{display:flex;align-items:center;gap:10px;text-align:left;border:0;border-radius:10px;padding:10px 12px;color:rgba(255,255,255,.9);font-weight:600;background:transparent;border-bottom:0;white-space:normal}
+.sidebar .tabs button:hover{background:rgba(255,255,255,.14);color:#fff}
+.sidebar .tabs button[aria-selected="true"]{background:#0A1730;color:#fff;box-shadow:inset 3px 0 0 #6AAEFF}
+.sidebar .tabs .ic{flex:none;opacity:.9}
+.sidebar :focus-visible{outline-color:#fff}
+main.wrap{max-width:1240px;width:100%}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;padding:16px 14px}
+  .sb-brand{flex-direction:row;align-items:center}
+  .sb-brand .logo{width:60px}
+  .fac{flex-direction:row;overflow-x:auto}
+  .fac button{flex:1;min-width:140px;grid-template-columns:30px 1fr;padding:8px 10px;gap:0 8px}
+  .fac .fk{font-size:18px}
+  .fac .fs,.fac .fl{white-space:nowrap}
+  .sidebar .tabs{flex-direction:row;overflow-x:auto}
+  .sidebar .tabs button{white-space:nowrap}
+}
+/* compare */
+.cmp-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.cmp-sum .box{padding:14px 16px}
+.cmp-sum h4{margin:0 0 4px;font-size:15px}
+.cmp-sum .big{font-size:26px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+.ctab{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:14px}
+.ctab th{font-size:12.5px;color:var(--ink3);font-weight:600;text-align:center;padding:0 6px}
+.ctab th:first-child{text-align:left}
+.ctab tr.r{cursor:pointer}
+.ctab tr.r td{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 10px;text-align:center;font-variant-numeric:tabular-nums}
+.ctab tr.r td:first-child{text-align:left;border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+.ctab tr.r td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+.ctab tr.r:hover td{border-color:var(--brand)}
+.ctab td b{font-size:16px}
+.ctab td small{display:block;color:var(--ink3);font-size:11.5px}
+.ctab td.bad{background:color-mix(in srgb,var(--bad) 11%,var(--surface))!important}
+.ctab td.watch{background:color-mix(in srgb,var(--watch) 13%,var(--surface))!important}
+.ctab td.ok{background:color-mix(in srgb,var(--ok) 9%,var(--surface))!important}
+.ctab .star{color:var(--brand);font-weight:700;margin-left:4px}
+.ctab .pn{font-weight:600;line-height:1.3}
+.ctab .pn small{display:block;font-weight:400;color:var(--ink3);font-size:12px}
+@media (max-width:640px){.cmp-sum{grid-template-columns:1fr}}
+.gate{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#040A14,#081528 55%,#0D2042)}
+.gate[hidden]{display:none}
+.gate-card{background:#fff;color:#0F2A4A;border-radius:18px;padding:28px 26px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.gate-logo{width:110px;height:auto;margin:0 auto 10px;display:block}
+.gate-card h2{margin:0 0 6px;font-size:20px}.gate-card p{color:#46617F;font-size:14px}
+.user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 10px;font-size:12.5px}
+.user span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user button{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:7px;padding:3px 8px;cursor:pointer;font-size:12px}
+.user .role{font-size:11px;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.2)}
+/* params grid */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:6px 13px;border-radius:999px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink2);display:inline-flex;gap:7px;align-items:center}
+.chip[aria-pressed="true"]{border-color:var(--brand);color:var(--brand);background:var(--brand2)}
+.chip .sw{width:10px;height:10px;border-radius:3px}
+.stsec{margin-bottom:26px}
+.stsec h3{display:flex;align-items:center;gap:10px;font-size:18px;margin:0 0 12px}
+.stno{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;color:#fff;font-size:14px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-left-width:4px;border-radius:12px;padding:12px 14px 10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;width:100%}
+.card:hover{border-color:var(--brand);box-shadow:0 2px 10px rgba(28,111,214,.12)}
+.card .ct{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.card .ct b{font-size:14.5px;line-height:1.3}
+.card .ct small{display:block;font-weight:400;color:var(--ink3);font-size:12px}
+.card .val{font-size:24px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.card .val small{font-size:12.5px;font-weight:500;color:var(--ink2);margin-left:6px}
+.card svg{width:100%;height:56px;display:block}
+.card .fc{font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+
+/* dialog */
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:0;width:min(1000px,calc(100vw - 24px));max-height:calc(100vh - 24px)}
+dialog::backdrop{background:rgba(10,16,12,.55)}
+.dlg-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+.dlg-h h3{margin:0;font-size:19px}
+.dlg-h p{margin:2px 0 0;color:var(--ink2);font-size:13.5px}
+.dlg-b{padding:16px 20px 22px;overflow:auto}
+.x{border:1px solid var(--line);background:var(--surface2);border-radius:9px;width:36px;height:36px;cursor:pointer;font-size:18px;flex:none}
+.chartbox{position:relative;height:320px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:16px 0}
+.stats div{background:var(--surface);padding:9px 12px}
+.stats small{display:block;color:var(--ink3);font-size:12px}
+.stats b{font-size:17px;font-variant-numeric:tabular-nums}
+.flags{margin:0 0 12px;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.flags li{font-size:14px;padding:8px 12px;border-radius:8px;background:var(--surface2);border-left:3px solid var(--watch)}
+.recs{margin:6px 0 0;padding-left:20px}
+.recs li{margin:3px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+/* loss tab */
+.stack{display:flex;height:26px;border-radius:6px;overflow:hidden;background:var(--surface2)}
+.stack span{display:block;height:100%}
+.lrow{display:grid;grid-template-columns:44px minmax(0,1fr) 70px;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--ink2);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink2)}
+label.f input,label.f select{border:1px solid var(--line);background:var(--surface2);border-radius:8px;padding:7px 10px;font-size:15px;color:var(--ink)}
+.slider{display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:4px 12px;align-items:center;margin:12px 0}
+.slider label{font-size:14px;font-weight:600}
+.slider label small{display:block;font-weight:400;color:var(--ink3);font-size:12.5px}
+.slider input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--brand)}
+.slider output{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.result{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:10px}
+.result div{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface2)}
+.result small{display:block;color:var(--ink3);font-size:12.5px}
+.result b{font-size:22px;font-variant-numeric:tabular-nums}
+.drv{display:grid;grid-template-columns:minmax(0,1fr) 120px 48px;gap:8px;align-items:center;font-size:13.5px;padding:5px 0;border-top:1px solid var(--line)}
+.drv .rb{position:relative;height:10px;background:var(--surface2);border-radius:5px}
+.drv .rb i{position:absolute;top:0;height:100%;border-radius:5px}
+.drv .rb::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--ink3)}
+
+/* data tab */
+textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);padding:10px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.msg{font-size:14px;margin-top:8px}
+.msg.err{color:var(--bad)} .msg.good{color:var(--ok)}
+fieldset{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0}
+legend{font-weight:700;padding:0 6px}
+.dict{width:100%;border-collapse:collapse;font-size:13px}
+.dict td,.dict th{padding:5px 8px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+.dict code{font-size:12.5px}
+.scroll{overflow-x:auto}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr}
+  .side{border-left:0;border-top:1px solid var(--line)}
+  .grid2,.two{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .wrap{padding:14px 12px 40px}
+  .top h1{font-size:21px}
+  .prow{grid-template-columns:6px minmax(0,1fr) 72px 72px 22px}
+  .prow .hide-s{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="gate" class="gate" hidden>
+  <div class="gate-card">
+    <img class="gate-logo" alt="KBS Sugar" id="gateLogo">
+    <h2>ควบคุมและพยากรณ์พารามิเตอร์กระบวนการ</h2>
+    <p>ล็อกอินด้วยบัญชี Google ของบริษัท (@kbs.co.th) เพื่อดูข้อมูลของทีม</p>
+    <button class="btn" id="loginBtn">ล็อกอินด้วย Google</button>
+    <p class="msg" id="gateMsg"></p>
+  </div>
+</div>
+<div class="app">
+<aside class="sidebar" aria-label="เมนูหลัก">
+  <div class="sb-brand">
+    <img class="logo" src="data:image/webp;base64,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" alt="KBS Sugar แผนกวิเคราะห์และกลยุทธ์" width="274" height="320">
+    <div>
+      <h1>ควบคุมและพยากรณ์พารามิเตอร์กระบวนการ</h1>
+      <p class="dept">KBS Sugar แผนกวิเคราะห์และกลยุทธ์</p>
+    </div>
+  </div>
+  <p class="sb-note">ฤดูหีบ 69/70 ใช้เป้าหมายและค่าสะสมฤดู 68/69 เป็นจุดตั้งต้น พยากรณ์ล่วงหน้า 7–14 วัน</p>
+  <div class="user" id="userBox"></div>
+  <div class="sb-label">เลือกโรงงาน</div>
+  <div class="fac" role="group" aria-label="เลือกโรงงาน" id="factorySeg"></div>
+  <div class="sb-label">เมนู</div>
+  <nav class="tabs" role="tablist" id="tabs" aria-orientation="vertical">
+    <button role="tab" data-tab="overview" aria-selected="true"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>ภาพรวม</button>
+    <button role="tab" data-tab="params" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/></svg>พารามิเตอร์และพยากรณ์</button>
+    <button role="tab" data-tab="compare" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>เปรียบเทียบ AB / C / S</button>
+    <button role="tab" data-tab="loss" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.5 6"/></svg>Loss และ Yield</button>
+    <button role="tab" data-tab="data" aria-selected="false"><svg class="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>บันทึกข้อมูล</button>
+  </nav>
+</aside>
+<main class="wrap">
+
+  <div id="banner" class="banner"></div>
+
+  <section class="hero" aria-label="เส้นทางกระบวนการและ loss">
+    <div class="flow" id="flow"></div>
+    <aside class="side">
+      <div>
+        <h2>Total loss สะสม</h2>
+        <div class="bigloss num" id="totalLoss">–</div>
+        <div class="recov" id="recov"></div>
+      </div>
+      <table class="cmp num" id="cmpTable"></table>
+      <div class="muted">คลิกสถานีบนเส้นกระบวนการเพื่อดูพารามิเตอร์ของสถานีนั้น</div>
+    </aside>
+  </section>
+
+  <section class="panel" id="p-overview">
+    <div class="grid2">
+      <div class="box">
+        <h3>ต้องจัดการก่อน</h3>
+        <p class="sub">เรียงตามความรุนแรง: หลุดเป้าแล้ว, แนวโน้มจะหลุดใน 14 วัน, โอกาสหลุดเป้าใน 7 วัน (พารามิเตอร์ที่กระทบ loss มีน้ำหนักมากกว่า)</p>
+        <div class="plist" id="plist"></div>
+      </div>
+      <div class="box">
+        <h3>ให้ Claude วิเคราะห์</h3>
+        <p class="sub">ส่งสรุปสถิติและผลพยากรณ์ของโรงงานนี้ให้ Claude หาสาเหตุที่เป็นไปได้ และลำดับสิ่งที่ควรทำ</p>
+        <div class="row" style="margin-bottom:12px">
+          <button class="btn" id="aiBtn">วิเคราะห์โรงงาน AB</button>
+          <span class="muted" id="aiState"></span>
+        </div>
+        <div class="ai-out" id="aiOut"><p class="muted">ผลวิเคราะห์จะแสดงที่นี่ ใช้เวลาประมาณ 20–40 วินาที</p></div>
+      </div>
+    </div>
+
+    <div class="box" style="margin-top:18px">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div><h3>ผลวิเคราะห์ที่บันทึกไว้</h3><p class="sub" id="savedSub">ทุกคนที่เปิดหน้านี้ดูผลวิเคราะห์ย้อนหลังของโรงงานนี้ได้ และดาวน์โหลดเป็นไฟล์ HTML ไปส่งต่อหรือพิมพ์ได้</p></div>
+      </div>
+      <div id="savedList"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-params" hidden>
+    <div class="filters" id="stFilters"></div>
+    <div id="paramSections"></div>
+  </section>
+
+  <section class="panel" id="p-compare" hidden>
+    <div class="cmp-sum" id="cmpSum"></div>
+    <div class="filters" id="cmpFilters"></div>
+    <p class="muted" style="margin:-6px 0 12px">ค่าสะสม (todate) ของแต่ละโรงงานเทียบกับเป้าของตัวเอง สีพื้นแสดงสถานะ ★ คือโรงงานที่มีระยะห่างจากเป้าดีที่สุด คลิกแถวเพื่อดูกราฟเทียบรายวัน</p>
+    <div id="cmpTables"></div>
+  </section>
+
+  <section class="panel" id="p-loss" hidden>
+    <div class="two">
+      <div class="box">
+        <h3>องค์ประกอบ loss เทียบ 3 โรงงาน</h3>
+        <p class="sub">% pol ในอ้อย ค่าสะสม (milling loss ของ AB ถ่วงน้ำหนักตามตันอ้อย/ชม. ของชุด A และ B)</p>
+        <div id="lossStack"></div>
+        <div class="legend" id="lossLegend"></div>
+      </div>
+      <div class="box">
+        <h3>ถ้าลด loss ได้ จะได้น้ำตาลเพิ่มเท่าไร</h3>
+        <p class="sub">ปรับสมมติฐานให้ตรงกับโรงงาน แล้วเลื่อนแถบเพื่อจำลองการลด loss แต่ละส่วน</p>
+        <div class="form" id="whatifInputs"></div>
+        <div id="sliders"></div>
+        <div class="row"><button class="btn ghost" id="toTarget">ตั้งค่าให้ถึงเป้า/ระดับโรงงานที่ดีที่สุด</button><button class="btn ghost" id="resetSl">รีเซ็ต</button></div>
+        <div class="result" id="whatifOut"></div>
+      </div>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>ตัวแปรที่เคลื่อนไหวไปพร้อมกับ loss</h3>
+      <p class="sub">ค่าสหสัมพันธ์ (r) รายวันกับ loss ในกากน้ำตาล และ undetermined loss ของโรงงานนี้ ใช้ชี้จุดที่ควรตรวจก่อน ความสัมพันธ์ไม่ได้ยืนยันว่าเป็นสาเหตุ</p>
+      <div class="two" id="drivers"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-data" hidden>
+    <div class="two">
+      <div class="box">
+        <h3>บันทึกค่ารายวัน</h3>
+        <p class="sub">กรอกเฉพาะค่าที่มี ช่องว่างจะไม่ถูกบันทึกทับ</p>
+        <div class="form">
+          <label class="f">โรงงาน<select id="entryFactory"><option>AB</option><option>C</option><option>S</option></select></label>
+          <label class="f">วันที่หีบ<input id="entryDay" type="number" min="1" max="200" inputmode="numeric"></label>
+        </div>
+        <div id="entryFields"></div>
+        <div class="row"><button class="btn" id="entrySave">บันทึกค่าวันนี้</button></div>
+        <div class="msg" id="entryMsg"></div>
+      </div>
+      <div class="box">
+        <h3>นำเข้าจากไฟล์ CSV</h3>
+        <p class="sub">หนึ่งแถวต่อหนึ่งวันต่อหนึ่งชุด คอลัมน์ <code>day</code>, <code>unit</code> (A, B, AB, C, S) แล้วตามด้วยรหัสพารามิเตอร์ในตารางด้านล่าง ส่งออกจาก Amazon QuickSight หรือ Excel แล้ววางได้เลย</p>
+        <div class="row" style="margin-bottom:10px">
+          <input type="file" id="csvFile" accept=".csv,text/csv">
+          <button class="btn ghost" id="tplBtn">ดาวน์โหลดแม่แบบ CSV</button>
+        </div>
+        <textarea id="csvText" placeholder="day,unit,pol_ext,tch,mill_loss&#10;1,A,96.5,620,3.8&#10;1,B,95.8,255,4.6"></textarea>
+        <div class="row" style="margin-top:10px"><button class="btn" id="csvImport">นำเข้าข้อมูล</button><button class="btn ghost" id="clearBtn">ลบข้อมูลของโรงงานที่เลือก</button></div>
+        <div class="msg" id="csvMsg"></div>
+      </div>
+    </div>
+    <div class="box" style="margin-top:18px">
+      <h3>รหัสพารามิเตอร์</h3>
+      <p class="sub">เป้าหมายนำมาจากรายงาน Control Parameter Tracking ฤดู 68/69 ค่า 0 ถือว่าไม่มีข้อมูล (วันหยุดหีบ)</p>
+      <div class="scroll"><table class="dict" id="dict"></table></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <div class="dlg-h"><div><h3 id="dlgTitle"></h3><p id="dlgSub"></p></div><button class="x" id="dlgClose" aria-label="ปิด">×</button></div>
+  <div class="dlg-b" id="dlgBody"></div>
+</dialog>
+
+<script>
+"use strict";
+/* ---------- definitions ---------- */
+const SEASON = "69/70";
+const ST = {
+  M:{name:"ลูกหีบ", full:"ลูกหีบ (Milling)", n:1, c:"--cane"},
+  E:{name:"ทำใสและระเหย", full:"ทำใสและระเหย (Evaporator)", n:2, c:"--steam"},
+  V:{name:"เคี่ยว", full:"เคี่ยว (Vacuum pan)", n:3, c:"--pan"},
+  C:{name:"ปั่นแยก", full:"ปั่นแยก (Centrifugal)", n:4, c:"--mol"}
+};
+const FACT = {AB:{units:["A","B","AB"],days:114}, C:{units:["C"],days:117}, S:{units:["S"],days:115}};
+const UNIT_FACT = {A:"AB",B:"AB",AB:"AB",C:"C",S:"S"};
+const unitLabel = u => u==="A"?"ชุดหีบ A":u==="B"?"ชุดหีบ B":"";
+const m4 = v => ({A:v,B:v,C:v,S:v});
+
+function P_(o){return Object.assign({dec:2, loss:false, affects:"", rec:[]}, o);}
+const P = [
+ // Milling
+ P_({id:"pol_ext",st:"M",name:"% Pol extraction",u:"%",dir:"min",t:{A:96,B:95,C:97,S:97},td:{A:96.72,B:95.96,C:98.01,S:97.34},sd:.35,loss:true,affects:"Milling loss และ recovery รวม",
+   rec:["ตรวจอัตรา imbibition (% fibre) และอุณหภูมิน้ำ imbibition","ตรวจ setting และแรงกด hydraulic ของลูกหีบ โดยเฉพาะชุดท้าย","ตรวจ Preparation index และสภาพค้อน/มีดเตรียมอ้อย","ดูความชื้นชานอ้อยควบคู่ ถ้าชื้นขึ้นพร้อมกันแปลว่าการบีบไม่พอ"]}),
+ P_({id:"tch",st:"M",name:"อ้อยเข้าหีบ",u:"ตัน/ชม.",dir:"min",t:{A:635,B:280,C:500,S:540},td:{A:634.38,B:257.81,C:524.35,S:528.03},sd:-.06,dec:1,affects:"กำลังผลิตและต้นทุนต่อตัน",
+   rec:["แยกเวลาหยุดหีบตามสาเหตุ (อ้อยขาด, เครื่องจักร, หม้อไอน้ำ, ปลายทางเต็ม)","จัดคิวรถอ้อยให้ป้อนสม่ำเสมอ ลดช่วงอ้อยขาด","ตรวจ feeding chute และ cane carrier","อย่าเร่งหีบจนความชื้นชานและ milling loss สูงขึ้น"]}),
+ P_({id:"mill_loss",st:"M",name:"Milling loss",u:"% pol อ้อย",dir:"max",t:{A:4,B:5,C:3,S:3.1},td:{A:3.62,B:4.48,C:2.19,S:2.91},sd:.3,loss:true,affects:"Total loss โดยตรง",
+   rec:["เพิ่ม imbibition เท่าที่ภาระระเหยรับได้","ปรับ setting ลูกหีบชุดท้าย และตรวจผิว/arcing ของลูกหีบ","คุม Preparation index ให้ถึงเป้า","ตรวจ drainage ของร่องลูกหีบ"]}),
+ P_({id:"jpd",st:"M",name:"Purity drop น้ำอ้อย",u:"หน่วย purity",dir:"max",t:{A:1.36,B:1.28,C:1.9,S:1.14},td:{A:1.26,B:1.23,C:1.31,S:1.12},sd:.2,affects:"Undetermined loss (จุลินทรีย์และ inversion ที่ลูกหีบ)",
+   rec:["ล้างลูกหีบด้วยไอน้ำ/น้ำร้อนตามรอบ และใช้ biocide ตามแผน","ลดเวลาอ้อยค้างลาน (cut-to-crush)","ตรวจจุดอับน้ำอ้อยใน juice tray และร่องระบาย","ตรวจสัดส่วนอ้อยไฟไหม้และอ้อยค้างคืน"]}),
+ P_({id:"bag_moist",st:"M",name:"ความชื้นชานอ้อย",u:"%",dir:"max",t:{A:49.5,B:50.5,C:49.5,S:46.6},td:{A:49.11,B:50.07,C:49.48,S:45.33},sd:.4,affects:"Milling loss และประสิทธิภาพหม้อไอน้ำ",
+   rec:["ปรับ setting/แรงกดลูกหีบตัวสุดท้าย","ตรวจการระบายน้ำที่ร่องลูกหีบ","อย่าให้ imbibition เกินกว่าที่ลูกหีบระบายได้","ตรวจความเร็วลูกหีบเทียบกับปริมาณ fibre"]}),
+ P_({id:"pi",st:"M",name:"Preparation index",u:"%",dir:"min",t:{A:90,B:90,C:90,S:90.4},td:{A:90.6,B:90.62,C:90.61,S:90.76},sd:.15,affects:"% Pol extraction",
+   rec:["ตรวจและเปลี่ยนค้อน shredder ตามชั่วโมงใช้งาน","ตรวจช่องห่าง anvil","ตรวจมีดตัดอ้อยและรอบ shredder"]}),
+ P_({id:"mj_brix",st:"M",name:"Brix น้ำอ้อยรวม",u:"°Bx",dir:"min",t:m4(13.5),td:{A:14.59,B:14.93,C:14.62,S:14.28},sd:.6,affects:"ภาระการระเหยและไอน้ำ",
+   rec:["ตรวจว่า imbibition สูงเกินจำเป็นหรือไม่","ตรวจคุณภาพอ้อยเข้า (CCS, สิ่งเจือปน)","ถ้าต่ำต่อเนื่อง เตรียมรับภาระระเหยเพิ่ม"]}),
+ // Evaporator
+ P_({id:"syr_brix",st:"E",name:"Brix น้ำเชื่อม",u:"°Bx",dir:"range",t:{AB:[60,68],C:[60,68],S:[62,70]},td:{AB:64.49,C:62.77,S:66.85},sd:2,affects:"ภาระการเคี่ยวและสีน้ำตาล",
+   rec:["ต่ำ: ตรวจไอน้ำและ vacuum ตัวสุดท้าย, ตะกรันในท่อ, การระบายก๊าซที่ไม่ควบแน่น","สูง: ระวังผลึกเกิดในท่อและสีเพิ่ม ลด retention","วางแผนล้างตะกรันตามแนวโน้ม heat transfer"]}),
+ P_({id:"turb",st:"E",name:"Turbidity น้ำใส",u:"NTU",dir:"max",t:{AB:7,C:7,S:7},td:{AB:5.5,C:3.99,S:6.66},sd:1,affects:"สีและคุณภาพน้ำตาล, ตะกรัน",
+   rec:["ตรวจ pH หลังเติมปูนขาว และอุณหภูมิก่อนเข้า clarifier (flash)","ปรับขนาด flocculant (ppm) และจุดเติม","ตรวจ phosphate ในน้ำอ้อย","ตรวจ retention และระดับตะกอนใน clarifier"]}),
+ P_({id:"fc_loss",st:"E",name:"Loss ในกากตะกอน",u:"% pol อ้อย",dir:"max",t:{AB:.45,C:.45,S:.38},td:{AB:.31,C:.33,S:.3},sd:.08,loss:true,affects:"Total loss โดยตรง",
+   rec:["ปรับปริมาณและอุณหภูมิน้ำล้าง filter","ตรวจ vacuum ของ filter และความหนา cake","ตรวจ bagacillo ที่ผสม","ตรวจหัวสเปรย์และผ้า/ตะแกรงกรอง"]}),
+ P_({id:"ph_drop",st:"E",name:"pH drop น้ำใส→น้ำเชื่อม",u:"หน่วย pH",dir:"max",t:{AB:1,C:1,S:1},td:{AB:.89,C:.91,S:.54},sd:.2,affects:"Undetermined loss (inversion ในตัวระเหย)",
+   rec:["ตรวจ retention และอุณหภูมิตัวระเหยตัวแรก","คุม pH น้ำใสให้พอ","ลดการค้างน้ำเชื่อมในถังพัก","ตรวจระดับ liquid level ในตัวระเหย"]}),
+ P_({id:"pur_drop",st:"E",name:"Purity drop น้ำใส→น้ำเชื่อม",u:"หน่วย purity",dir:"max",t:{AB:.75,C:.75,S:.25},td:{AB:.07,C:-.03,S:.14},sd:.5,affects:"Undetermined loss",
+   rec:["ตรวจน้ำตาลใน condensate และน้ำหล่อเย็น (entrainment)","ตรวจ retention time","อ่านร่วมกับ pH drop ถ้าขึ้นพร้อมกันคือ inversion"]}),
+ // Vacuum
+ P_({id:"a_batch_cc",st:"V",name:"A (batch) % crystal",u:"%",dir:"min",t:{AB:50,S:51},td:{AB:54.11,S:53.94},sd:3,affects:"Yield ต่อ strike และ purity A-molasses",
+   rec:["ตรวจคุณภาพ seed/graining (ขนาดผลึกและ CV)","คุม supersaturation ช่วง brix-up","ตรวจ brix massecuite ตอน drop"]}),
+ P_({id:"a_batch_drop",st:"V",name:"A (batch) drop Nutsch",u:"หน่วย purity",dir:"min",t:{AB:20,S:21},td:{AB:21.2,S:22.42},sd:1.5,affects:"Purity A-molasses และภาระหม้อ B/C",
+   rec:["ตรวจ purity ของ feed","ยืดเวลาเคี่ยวช่วงท้ายให้ผลึกโต","ตรวจ crystal content ควบคู่"]}),
+ P_({id:"a_cont_cc",st:"V",name:"A (continuous) % crystal",u:"%",dir:"min",t:{AB:55,C:55,S:55},td:{AB:59.72,C:58.99,S:58.37},sd:2.5,affects:"Yield และ purity A-molasses",
+   rec:["คุมอัตราป้อน seed ให้คงที่","ตรวจ brix/ความหนืดตามห้องของ pan","ตรวจไอน้ำและ vacuum"]}),
+ P_({id:"a_cont_drop",st:"V",name:"A (continuous) drop Nutsch",u:"หน่วย purity",dir:"min",t:{AB:21,C:22,S:23},td:{AB:24.28,C:21.6,S:23.93},sd:1.5,affects:"Purity A-molasses และภาระหม้อ B/C",
+   rec:["ตรวจ purity feed syrup/molasses ที่ป้อน","เพิ่ม retention ใน pan ถ้าทำได้","ตรวจขนาด seed และ CV"]}),
+ P_({id:"b1_cc",st:"V",name:"B1 % crystal",u:"%",dir:"min",t:{AB:40},td:{AB:42.97},sd:2.5,affects:"Purity B-molasses",rec:["ตรวจ footing และ seed","คุม brix ตอน drop"]}),
+ P_({id:"b2_cc",st:"V",name:"B2 % crystal",u:"%",dir:"min",t:{AB:42},td:{AB:44.32},sd:2.5,affects:"Purity B2-molasses",rec:["ตรวจ footing และ seed","คุม brix ตอน drop"]}),
+ P_({id:"b_cont_cc",st:"V",name:"B (continuous) % crystal",u:"%",dir:"min",t:{C:43,S:38},td:{C:47.38,S:42.79},sd:2.5,affects:"Purity B-molasses",rec:["คุมอัตราป้อน seed","ตรวจ brix ตามห้องของ pan"]}),
+ P_({id:"b1_drop",st:"V",name:"B1 drop Nutsch",u:"หน่วย purity",dir:"min",t:{AB:20},td:{AB:22.1},sd:1.5,affects:"Purity B-molasses",rec:["ตรวจ purity feed","ตรวจเวลาเคี่ยว"]}),
+ P_({id:"b2_drop",st:"V",name:"B2 drop Nutsch",u:"หน่วย purity",dir:"min",t:{AB:23},td:{AB:24.72},sd:1.5,affects:"Purity B2-molasses",rec:["ตรวจ purity feed","ตรวจเวลาเคี่ยว"]}),
+ P_({id:"c_batch_drop",st:"V",name:"C (batch) drop Nutsch",u:"หน่วย purity",dir:"min",t:{AB:20},td:{AB:21.5},sd:1.8,loss:true,affects:"Final molasses purity",rec:["ตรวจ purity C massecuite","เพิ่มเวลาและการระบายความร้อนใน crystallizer"]}),
+ P_({id:"c_cont_cc",st:"V",name:"C (continuous) % crystal",u:"%",dir:"min",t:{AB:null,C:30,S:24},td:{AB:32.92,C:30.77,S:29.02},sd:2.5,affects:"Final molasses purity",
+   rec:["ตรวจ C seed/footing","ลดความหนืดโดยคุมอุณหภูมิและ brix","ทำ cooling ใน crystallizer ให้ถึงอุณหภูมิเป้า"]}),
+ P_({id:"c_cont_drop",st:"V",name:"C (continuous) drop Nutsch",u:"หน่วย purity",dir:"min",t:{AB:20,C:18,S:16},td:{AB:21.4,C:20.93,S:19.36},sd:1.8,loss:true,affects:"Final molasses purity และ loss ในกากน้ำตาล",
+   rec:["เพิ่ม retention และ cooling ใน crystallizer","คุม purity C massecuite ไม่ให้สูงเกิน","ตรวจ reheater ก่อนปั่นไม่ให้ร้อนเกินจนผลึกละลาย"]}),
+ // Centrifugal
+ P_({id:"fm_pur",st:"C",name:"Final molasses purity",u:"%",dir:"max",t:{AB:34,C:32,S:32.5},td:{AB:33.48,C:31.37,S:32.33},sd:1.2,loss:true,affects:"Loss ในกากน้ำตาลโดยตรง",
+   rec:["เพิ่ม exhaustion: ลด purity C massecuite และเพิ่มเวลา/cooling ใน crystallizer","ตรวจ C-molasses purity rise (ผลึกละลายในหม้อปั่น)","ตรวจอุณหภูมิ reheater","ตรวจ drop Nutsch ของ C massecuite"]}),
+ P_({id:"fm_cane",st:"C",name:"Final molasses % อ้อย",u:"% อ้อย",dir:"max",t:{AB:4.27,C:3.5,S:4},td:{AB:4.3,C:4.11,S:4.15},sd:.8,loss:true,affects:"Loss ในกากน้ำตาล",
+   rec:["ลดน้ำที่เติมเข้ากระบวนการเกินจำเป็น (dilution)","ลด purity กากน้ำตาลเพื่อลดปริมาณที่ต้องวนกลับ","ตรวจปริมาณ non-sugar จากอ้อย"]}),
+ P_({id:"colour",st:"C",name:"สีน้ำตาลทรายดิบ",u:"IU",dir:"max",t:{AB:1500,C:1200,S:1200},td:{AB:1034.45,C:714.25,S:896.84},sd:-.2,dec:0,affects:"ราคาและเกรดน้ำตาล",
+   rec:["ลด retention และอุณหภูมิที่ตัวระเหยและหม้อเคี่ยว","ตั้งน้ำล้างในหม้อปั่น A ให้เหมาะสม","ตรวจ turbidity น้ำใสและ purity A massecuite"]}),
+ P_({id:"moist",st:"C",name:"ความชื้นน้ำตาลทรายดิบ",u:"%",dir:"max",t:{AB:.25,C:.2,S:.14},td:{AB:.14,C:.13,S:.11},sd:.03,affects:"การเก็บรักษาและคุณภาพ",
+   rec:["ตรวจ dryer และอุณหภูมิอากาศร้อน","ตรวจขนาดผลึก ผลึกละเอียดชื้นง่าย","ตรวจ steam wash และเวลาปั่น"]}),
+ P_({id:"a_rise",st:"C",name:"A-molasses purity rise",u:"หน่วย purity",dir:"max",t:{AB:2,C:2,S:2.5},td:{AB:3.48,C:2.95,S:3.07},sd:.9,loss:true,affects:"Purity ที่วนกลับ ทำให้ final molasses purity สูงขึ้น",
+   rec:["ตรวจปริมาณและอุณหภูมิน้ำล้างในหม้อปั่น A (ไม่ล้างเกิน)","ตรวจตะแกรงหม้อปั่น ขาดหรือสึก","ตรวจเวลาปั่นและรอบ","ตรวจผลึกละเอียด/CV สูง และการ reheating massecuite ก่อนปั่น"]}),
+ P_({id:"b_rise",st:"C",name:"B-molasses purity rise",u:"หน่วย purity",dir:"max",t:{AB:2.5,C:2.5,S:3},td:{AB:-.23,C:1.82,S:2.94},sd:1,loss:true,affects:"Purity ที่วนกลับเข้า C",
+   rec:["ตรวจตะแกรงหม้อปั่น continuous (สึก/ขาด)","ตรวจน้ำและไอน้ำที่ฉีด","ตรวจอัตราป้อน massecuite"]}),
+ P_({id:"c_rise",st:"C",name:"C-molasses purity rise",u:"หน่วย purity",dir:"max",t:{AB:2.5,C:2.5,S:2},td:{AB:1.27,C:1.33,S:.84},sd:.8,loss:true,affects:"Final molasses purity โดยตรง",
+   rec:["ตรวจตะแกรงหม้อปั่น C","ลดน้ำ/ไอน้ำที่ฉีดให้น้อยที่สุด","ตรวจอุณหภูมิ reheater"]}),
+ P_({id:"mol_loss",st:"C",name:"Loss ในกากน้ำตาล",u:"% pol อ้อย",dir:"max",t:{AB:8.5,C:8,S:8.4},td:{AB:8.79,C:8.25,S:8.1},sd:.5,loss:true,affects:"Total loss โดยตรง",
+   rec:["ดูตัวแปรที่เคลื่อนไหวร่วมในแท็บ Loss และ Yield","คุม exhaustion ของ C massecuite (drop Nutsch, cooling)","ลด purity rise ในหม้อปั่นทุกชุดเพื่อลดการวนกลับ","ลดปริมาณกากน้ำตาล (% อ้อย)"]}),
+ P_({id:"undet_loss",st:"C",name:"Undetermined loss",u:"% pol อ้อย",dir:"none",t:{},td:{AB:11.22,C:5.63,S:8.73},sd:2,loss:true,affects:"Total loss โดยตรง",
+   rec:["ตรวจความแม่นยำการชั่ง ตวง และการสุ่มตัวอย่าง (สาเหตุที่พบบ่อยที่สุด)","ตรวจ inversion จาก pH drop และ purity drop ที่ตัวระเหย","ตรวจน้ำตาลใน condensate น้ำหล่อเย็น และจุดรั่ว","ตรวจ microbial loss ที่ลูกหีบ (purity drop น้ำอ้อย)","ทบทวนวิธีประเมิน stock in process"]})
+];
+const PBY = Object.fromEntries(P.map(p=>[p.id,p]));
+const LINKS = [["fm_pur",[["c_cont_drop",-.45],["c_rise",.4],["a_rise",.25]]],["mol_loss",[["fm_pur",.6],["fm_cane",.35]]],["undet_loss",[["pur_drop",.45],["ph_drop",.4],["jpd",.3]]],["mill_loss",[["pol_ext",-.6],["bag_moist",.35]]]];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+const sdev = a => {const m=mean(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/Math.max(1,a.length-1));};
+function fmt(v,d=2){ if(v==null||!isFinite(v)) return "–"; return Number(v).toLocaleString("th-TH",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function Phi(z){const t=1/(1+.2316419*Math.abs(z));const d=.3989423*Math.exp(-z*z/2);const p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p;}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function gauss(r){let u=0;while(!u)u=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r());}
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function hexA(hex,a){hex=hex.replace("#","");if(hex.length===3)hex=hex.split("").map(c=>c+c).join("");const n=parseInt(hex,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+const sdOf = (p,u) => p.sd<0 ? Math.abs(p.td[u]??1)*(-p.sd) : p.sd;
+const tgtText = (p,t) => t==null ? "ไม่มีเป้า" : p.dir==="range" ? `${t[0]}–${t[1]}` : (p.dir==="max"?"≤ ":"≥ ")+t;
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+
+/* ---------- state ---------- */
+const state = {factory:"AB", tab:"overview", station:"all", real:{AB:{},C:{},S:{}}, dbReady:false, cache:{}};
+let db=null, sampleFn=null, downloadsCap=null, aiAbort=null, chart=null;
+
+/* ---------- data ---------- */
+function paramUnits(p,f){ return FACT[f].units.filter(u => u in p.td || u in p.t || hasReal(f,`${p.id}|${u}`)); }
+function hasReal(f,k){ const s=state.real[f][k]; return s && Object.keys(s).length>0; }
+function realCount(f){ return Object.values(state.real[f]).reduce((n,s)=>n+Object.keys(s||{}).length,0); }
+
+function simulate(f){
+  const n=FACT[f].days, out={};
+  for(const p of P) for(const u of paramUnits(p,f)){
+    if(!(u in p.td)) continue;
+    const r=rng(hash(f+p.id+u)), sd=sdOf(p,u); let e=0,w=0; const y=[];
+    const ramp=(r()<.5?-1:1)*(.4+r()*1.1)*sd;
+    for(let i=0;i<n;i++){ e=.65*e+gauss(r)*sd*.75; w=.97*w+gauss(r)*sd*.08; let v=e+w; if(i>n-22) v+=ramp*(i-(n-22))/21; y.push(v); }
+    out[`${p.id}|${u}`]={y,r};
+  }
+  const z = a => {const m=mean(a),s=sdev(a)||1;return a.map(v=>(v-m)/s);};
+  for(const [tid,drv] of LINKS) for(const u of FACT[f].units){
+    const T=out[`${tid}|${u}`]; if(!T) continue; const sd=sdOf(PBY[tid],u);
+    for(const [did,wt] of drv){ const D=out[`${did}|${u}`]||out[`${did}|A`]; if(!D) continue; const zd=z(D.y); T.y=T.y.map((v,i)=>v*.85+wt*sd*zd[i]); }
+  }
+  const series={};
+  for(const k in out){ const [pid,u]=k.split("|"), p=PBY[pid], {y,r}=out[k], m=mean(y), td=p.td[u];
+    series[k]=y.map(v=> r()<.03 ? null : +(v-m+td).toFixed(p.dec+2)); }
+  return {n, series, source:"demo"};
+}
+function fromReal(f){
+  const src=state.real[f]; let n=0; const series={};
+  for(const k in src) for(const d in src[k]) n=Math.max(n,+d);
+  for(const k in src){ const a=new Array(n).fill(null); for(const d in src[k]){ const v=src[k][d]; if(v!=null&&isFinite(v)) a[+d-1]=+v; } series[k]=a; }
+  return {n, series, source:"real"};
+}
+function getData(f){ return realCount(f)>0 ? fromReal(f) : simulate(f); }
+
+/* ---------- analytics ---------- */
+function interp(v){ const a=v.slice(), idx=[]; a.forEach((x,i)=>{if(x!=null)idx.push(i);}); if(!idx.length) return a;
+  for(let i=0;i<idx[0];i++) a[i]=a[idx[0]];
+  for(let k=0;k<idx.length-1;k++){const i0=idx[k],i1=idx[k+1];for(let i=i0+1;i<i1;i++)a[i]=a[i0]+(a[i1]-a[i0])*(i-i0)/(i1-i0);}
+  for(let i=idx[idx.length-1]+1;i<a.length;i++) a[i]=a[idx[idx.length-1]]; return a; }
+function holt(y){
+  const phi=.9; let best=null;
+  for(const al of [.1,.2,.3,.4,.5,.6,.7]) for(const be of [.02,.05,.1,.2]){
+    let l=y[0], b=0, sse=0;
+    for(let t=1;t<y.length;t++){ const f=l+phi*b, e=y[t]-f; sse+=e*e; const ln=al*y[t]+(1-al)*(l+phi*b); b=be*(ln-l)+(1-be)*phi*b; l=ln; }
+    if(!best||sse<best.sse) best={sse,al,be,l,b};
+  }
+  best.sigma=Math.sqrt(best.sse/Math.max(1,y.length-2)); best.phi=phi;
+  best.f = h => { let s=0,pp=1; for(let i=1;i<=h;i++){pp*=phi;s+=pp;} return best.l+best.b*s; };
+  best.s = h => best.sigma*Math.sqrt(1+(h-1)*best.al*best.al*(1+best.be)**2);
+  return best;
+}
+function badness(p,t,v){ if(t==null||v==null) return null; if(p.dir==="max") return v-t; if(p.dir==="min") return t-v; if(p.dir==="range") return Math.max(t[0]-v,v-t[1]); return null; }
+function probBad(p,t,m,s){ if(t==null) return null; if(p.dir==="max") return 1-Phi((t-m)/s); if(p.dir==="min") return Phi((t-m)/s); if(p.dir==="range") return Phi((t[0]-m)/s)+1-Phi((t[1]-m)/s); return null; }
+function slope(a){ const n=a.length; if(n<3) return 0; const xm=(n-1)/2, ym=mean(a); let num=0,den=0; a.forEach((v,i)=>{num+=(i-xm)*(v-ym);den+=(i-xm)**2;}); return num/den; }
+
+function analyze(p,u,raw,n){
+  const y = raw.map(v => v==null||v===0 ? null : v);
+  const obs = y.filter(v=>v!=null), t = p.t[u] ?? null;
+  const base = {p,u,y,t,n,sd:sdOf(p,u),nobs:obs.length};
+  if(obs.length<8) return Object.assign(base,{insufficient:true,todate:obs.length?mean(obs):null,status:"info",score:0});
+  const filled = interp(y); let last=y.length-1; while(last>0&&y[last]==null) last--;
+  const fitY = filled.slice(Math.max(0,last-59), last+1);
+  const H = holt(fitY);
+  const todate = mean(obs), last7 = mean(obs.slice(-7)), w30 = obs.slice(-30), m30=mean(w30), s30=sdev(w30)||base.sd;
+  const fc=[]; for(let h=1;h<=14;h++) fc.push({h,m:H.f(h),s:H.s(h)});
+  const wk = slope(filled.slice(Math.max(0,last-13),last+1))*7;
+  const risk7 = probBad(p,t,fc[6].m,fc[6].s);
+  let dtb=null; if(t!=null && !(badness(p,t,last7)>0)) for(const x of fc){ if(badness(p,t,x.m)>0){dtb=x.h;break;} }
+  const flags=[]; const recent=y.slice(0,last+1).filter(v=>v!=null);
+  const lp=recent[recent.length-1];
+  if(Math.abs(lp-m30)>3*s30) flags.push(`ค่าล่าสุด ${fmt(lp,p.dec)} อยู่นอก ±3σ ของ 30 วันล่าสุด`);
+  const r8=recent.slice(-8); if(r8.length===8 && (r8.every(v=>v>m30)||r8.every(v=>v<m30))) flags.push(`8 จุดติดกันอยู่ด้าน${r8[0]>m30?"บน":"ล่าง"}ของค่าเฉลี่ย 30 วัน (ระดับเปลี่ยน)`);
+  const r7=recent.slice(-7); let up=true,dn=true; for(let i=1;i<r7.length;i++){if(r7[i]<=r7[i-1])up=false;if(r7[i]>=r7[i-1])dn=false;}
+  if(r7.length===7&&(up||dn)) flags.push(`7 จุดติดกัน${up?"เพิ่มขึ้น":"ลดลง"}ต่อเนื่อง (มีแนวโน้ม)`);
+  let status="ok", score=0;
+  if(t==null){ status="info"; }
+  else if(badness(p,t,todate)>0 || badness(p,t,last7)>0){ status="bad"; score=2+Math.min(3,Math.max(badness(p,t,last7)??0,badness(p,t,todate)??0)/base.sd); }
+  else if(risk7>=.3 || (dtb!=null&&dtb<=14)){ status="watch"; score=risk7+(dtb?(15-dtb)/28:0); }
+  else score=risk7*.5;
+  if(flags.length&&status==="ok") score+=.15;
+  if(p.loss) score*=1.4;
+  return Object.assign(base,{todate,last7,m30,s30,UL:m30+2*s30,LL:m30-2*s30,fc,wk,risk7,dtb,flags,status,score,H,last,lp});
+}
+function analyses(f){
+  if(state.cache[f]) return state.cache[f];
+  const D=getData(f), list=[];
+  for(const p of P) for(const u of paramUnits(p,f)){ const s=D.series[`${p.id}|${u}`]; if(!s) continue; list.push(analyze(p,u,s,D.n)); }
+  return state.cache[f]={D,list};
+}
+const findA = (f,id,u) => analyses(f).list.find(a=>a.p.id===id&&a.u===u);
+function lossParts(f){
+  const g=(id,u)=>findA(f,id,u)?.todate ?? null;
+  let mill;
+  if(f==="AB"){ const a=g("mill_loss","A"), b=g("mill_loss","B"), wa=g("tch","A")||1, wb=g("tch","B")||1; mill = a!=null&&b!=null ? (a*wa+b*wb)/(wa+wb) : (a??b); }
+  else mill=g("mill_loss",f);
+  const parts={mill, fc:g("fc_loss",f), mol:g("mol_loss",f), undet:g("undet_loss",f)};
+  parts.total=["mill","fc","mol","undet"].reduce((s,k)=>s+(parts[k]||0),0);
+  return parts;
+}
+
+/* ---------- rendering: hero ---------- */
+const trendArrow = a => { if(a.insufficient) return ""; const rel=a.wk/(a.sd||1); if(Math.abs(rel)<.25) return "→"; return rel>0?"↗":"↘"; };
+function trendColor(a){ if(a.insufficient||a.t==null) return "var(--ink3)"; const worse = a.p.dir==="max"? a.wk>0 : a.p.dir==="min"? a.wk<0 : false; return Math.abs(a.wk/(a.sd||1))<.25?"var(--ink3)": worse?"var(--bad)":"var(--ok)"; }
+
+function renderHero(){
+  const f=state.factory, {list}=analyses(f), L=lossParts(f);
+  const cnt = st => { const l=list.filter(a=>a.p.st===st); return {bad:l.filter(a=>a.status==="bad").length, watch:l.filter(a=>a.status==="watch").length, n:l.length}; };
+  const xs={M:222,E:410,V:598,C:786}, CW=168, cy=34, CH=150;
+  const ICON={
+    cane:c=>`<g stroke="${c}" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M22 60V14M34 60V8M46 60V18"/><path d="M19 44h6M19 30h6M31 40h6M31 24h6M43 46h6M43 32h6"/><path d="M34 12c-8-2-14 2-18-4M34 10c8-3 12 0 18-6M46 20c6-4 10-2 14-6M22 18c-5-4-10-3-13-8" stroke-width="2"/></g>`,
+    M:c=>`<g fill="none" stroke="${c}" stroke-width="2.4"><circle cx="20" cy="42" r="12" fill="${c}" fill-opacity=".14"/><circle cx="44" cy="42" r="12" fill="${c}" fill-opacity=".14"/><circle cx="32" cy="20" r="12" fill="${c}" fill-opacity=".22"/><circle cx="20" cy="42" r="3" fill="${c}"/><circle cx="44" cy="42" r="3" fill="${c}"/><circle cx="32" cy="20" r="3" fill="${c}"/><path d="M4 31h10M50 31h10" stroke-linecap="round" stroke-dasharray="2 3"/><path d="M28 58l4 4 4-4" stroke-linecap="round"/></g>`,
+    E:c=>`<g fill="none" stroke="${c}" stroke-width="2.4" stroke-linejoin="round"><path d="M8 58V26a8 8 0 0 1 16 0v32z" fill="${c}" fill-opacity=".14"/><path d="M36 58V20a10 10 0 0 1 20 0v38z" fill="${c}" fill-opacity=".22"/><path d="M24 44h12"/><path d="M8 48h16M36 46h20" stroke-opacity=".5"/><path d="M14 12c-2-3 2-5 0-8M46 6c-2-3 2-4 0-6" stroke-linecap="round"/><path d="M4 58h56" stroke-linecap="round"/></g>`,
+    V:c=>`<g fill="none" stroke="${c}" stroke-width="2.4" stroke-linejoin="round"><path d="M14 18a18 10 0 0 1 36 0v22l-12 14h-12L14 40z" fill="${c}" fill-opacity=".16"/><path d="M32 8v-4M26 54v6h12v-6"/><g fill="${c}" stroke="none"><rect x="22" y="26" width="5" height="5" rx="1" transform="rotate(20 24 28)"/><rect x="33" y="22" width="5" height="5" rx="1" transform="rotate(-15 35 24)"/><rect x="38" y="33" width="4" height="4" rx="1"/><rect x="26" y="37" width="4" height="4" rx="1" transform="rotate(35 28 39)"/></g></g>`,
+    C:c=>`<g fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round"><ellipse cx="32" cy="16" rx="20" ry="6" fill="${c}" fill-opacity=".22"/><path d="M12 16v28c0 4 9 7 20 7s20-3 20-7V16" fill="${c}" fill-opacity=".1"/><path d="M22 20v26M32 22v28M42 20v26" stroke-opacity=".45"/><path d="M50 4a26 14 0 0 1 8 10" /><path d="M58 14l-1-6-5 2"/><path d="M32 51v9"/></g>`,
+    sugar:c=>`<g stroke="${c}" stroke-width="2" stroke-linejoin="round"><path d="M14 58l18-34 18 34z" fill="${c}" fill-opacity=".18"/><g fill="${c}" fill-opacity=".9" stroke="none"><rect x="24" y="44" width="6" height="6" rx="1.2" transform="rotate(12 27 47)"/><rect x="33" y="48" width="6" height="6" rx="1.2" transform="rotate(-10 36 51)"/><rect x="29" y="36" width="5" height="5" rx="1" transform="rotate(25 31 38)"/></g><path d="M10 58h44" stroke-linecap="round"/></g>`
+  };
+  const hs=getComputedStyle($("#flow")); const cv=n=>hs.getPropertyValue(n).trim()||"#6AAEFF";
+  let s=`<svg viewBox="0 0 1000 338" role="img" aria-label="เส้นทางกระบวนการผลิตและจุดที่เกิด loss">
+  <defs>
+    <linearGradient id="pipeG" x1="0" x2="1"><stop offset="0" stop-color="${cv("--cane")}"/><stop offset=".35" stop-color="${cv("--steam")}"/><stop offset=".65" stop-color="${cv("--pan")}"/><stop offset="1" stop-color="${cv("--mol")}"/></linearGradient>
+    <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="var(--ink3)" stroke-width="3" stroke-opacity=".55"/></pattern>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity=".45"/></filter>
+  </defs>
+  <path d="M60 ${cy+62} H940" stroke="url(#pipeG)" stroke-width="14" stroke-linecap="round" opacity=".18"/>
+  <path d="M60 ${cy+62} H940" stroke="url(#pipeG)" stroke-width="4" stroke-linecap="round"/>
+  <path class="pipeflow" d="M60 ${cy+62} H940" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 16" opacity=".9"/>
+  <g transform="translate(18 ${cy+16})"><circle cx="42" cy="46" r="42" fill="var(--surface)" stroke="var(--line)" filter="url(#sh)"/><g transform="translate(10 14)">${ICON.cane(cv("--cane"))}</g></g>
+  <text x="60" y="${cy+124}" font-size="13" font-weight="600" fill="var(--ink2)" text-anchor="middle">อ้อยเข้า</text>
+  <g transform="translate(898 ${cy+16})"><circle cx="42" cy="46" r="42" fill="var(--surface)" stroke="var(--line)" filter="url(#sh)"/><g transform="translate(10 12)">${ICON.sugar(cv("--mol"))}</g></g>
+  <text x="940" y="${cy+124}" font-size="13" font-weight="600" fill="var(--ink2)" text-anchor="middle">น้ำตาลทรายดิบ</text>`;
+  const drips = {M:{v:L.mill,l:"ชานอ้อย"},E:{v:L.fc,l:"กากตะกอน"},V:{v:L.undet,l:"ไม่ทราบสาเหตุ",hatch:true},C:{v:L.mol,l:"กากน้ำตาล"}};
+  for(const st of ["M","E","V","C"]){
+    const c=cnt(st), x=xs[st]-CW/2, col=cv(ST[st].c), sv=`var(${ST[st].c})`;
+    const worst = c.bad?"var(--bad)":c.watch?"var(--watch)":"var(--ok)";
+    s+=`<g class="node" tabindex="0" role="button" data-st="${st}" aria-label="${ST[st].full}: หลุดเป้า ${c.bad}, เฝ้าระวัง ${c.watch}">
+      <rect class="box" x="${x}" y="${cy}" width="${CW}" height="${CH}" rx="18" fill="var(--surface)" stroke="var(--line)" stroke-width="1.2" filter="url(#sh)"/>
+      <clipPath id="cl${st}"><rect x="${x}" y="${cy}" width="${CW}" height="${CH}" rx="18"/></clipPath>
+      <rect x="${x}" y="${cy}" width="${CW}" height="5" fill="${sv}" clip-path="url(#cl${st})"/>
+      <circle cx="${x+CW-18}" cy="${cy+22}" r="5" fill="${worst}"/>
+      <rect x="${xs[st]-34}" y="${cy+16}" width="68" height="68" rx="18" fill="${sv}" fill-opacity=".08"/>
+      <g transform="translate(${xs[st]-32} ${cy+18})">${ICON[st](col)}</g>
+      <text x="${xs[st]}" y="${cy+106}" font-size="15" font-weight="700" fill="var(--ink)" text-anchor="middle"><tspan fill="${sv}">${ST[st].n}</tspan>  ${ST[st].name}</text>
+      <g font-size="12" font-weight="600">
+        <rect x="${xs[st]-72}" y="${cy+118}" width="68" height="22" rx="11" fill="var(--bad)" fill-opacity="${c.bad?.14:.06}"/>
+        <text x="${xs[st]-38}" y="${cy+133}" text-anchor="middle" fill="${c.bad?"var(--bad)":"var(--ink3)"}">หลุดเป้า ${c.bad}</text>
+        <rect x="${xs[st]+4}" y="${cy+118}" width="68" height="22" rx="11" fill="var(--watch)" fill-opacity="${c.watch?.16:.06}"/>
+        <text x="${xs[st]+38}" y="${cy+133}" text-anchor="middle" fill="${c.watch?"var(--watch)":"var(--ink3)"}">เฝ้าระวัง ${c.watch}</text>
+      </g>
+    </g>`;
+    const d=drips[st];
+    if(d&&d.v!=null){ const py=cy+CH+26, pw=CW, bw=pw-32, fw=Math.max(4,Math.min(1,d.v/12)*bw);
+      s+=`<path d="M${xs[st]} ${cy+CH} V${py}" stroke="${d.hatch?"var(--ink3)":sv}" stroke-width="2" stroke-dasharray="3 4"/>
+      <circle cx="${xs[st]}" cy="${py-4}" r="3.5" fill="${d.hatch?"var(--ink3)":sv}"/>
+      <rect x="${x}" y="${py}" width="${pw}" height="74" rx="14" fill="${d.hatch?"var(--surface2)":sv}" fill-opacity="${d.hatch?1:.13}" stroke="${d.hatch?"var(--line)":"none"}" ${d.hatch?'stroke-dasharray="4 3"':""}/>
+      <text x="${x+16}" y="${py+22}" font-size="12" fill="var(--ink2)">Loss ${d.l}</text>
+      <text x="${x+16}" y="${py+46}" font-size="20" font-weight="700" fill="${d.hatch?"var(--ink)":sv}" class="num">${fmt(d.v,2)}<tspan font-size="13" font-weight="600" fill="var(--ink2)"> %</tspan></text>
+      <rect x="${x+16}" y="${py+56}" width="${bw}" height="7" rx="3.5" fill="var(--line)" fill-opacity=".7"/>
+      <rect x="${x+16}" y="${py+56}" width="${fw.toFixed(1)}" height="7" rx="3.5" fill="${d.hatch?"url(#hatch)":sv}" ${d.hatch?'stroke="var(--ink3)" stroke-width=".8"':""}/>`; }
+  }
+  s+=`<text x="500" y="332" font-size="11.5" fill="var(--ink3)" text-anchor="middle">Loss หน่วย % pol ในอ้อย ความยาวแถบเทียบกับ 12%  •  Loss ไม่ทราบสาเหตุเกิดได้ทั้งกระบวนการ</text>`;
+  s+=`</svg>`;
+  $("#flow").innerHTML=s;
+  $("#flow").querySelectorAll(".node").forEach(n=>{ const go=()=>{state.station=n.dataset.st; setTab("params");}; n.addEventListener("click",go); n.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}}); });
+
+  $("#totalLoss").innerHTML=`${fmt(L.total,2)}<small>% pol อ้อย</small>`;
+  $("#recov").textContent=`Pol ที่ได้กลับคืนโดยประมาณ ${fmt(100-L.total,2)}%`;
+  let t=`<tr><th>โรงงาน</th><th>Total loss</th><th>กากน้ำตาล</th><th>ไม่ทราบสาเหตุ</th></tr>`;
+  for(const g of ["AB","C","S"]){ const x=lossParts(g); t+=`<tr class="${g===f?"cur":""}"><td>${g}</td><td>${fmt(x.total)}</td><td>${fmt(x.mol)}</td><td>${fmt(x.undet)}</td></tr>`; }
+  $("#cmpTable").innerHTML=t;
+}
+
+/* ---------- banner ---------- */
+function renderBanner(){
+  const f=state.factory, n=realCount(f), b=$("#banner");
+  if(n>0){ const D=analyses(f).D; b.className="banner real"; b.innerHTML=`<span class="dot s-ok" style="margin-top:6px"></span><div>โรงงาน <b>${f}</b> ใช้ข้อมูลจริงที่บันทึกไว้ ${n.toLocaleString("th-TH")} ค่า ถึงวันหีบที่ ${D.n} ข้อมูลนี้ทุกคนที่เปิดหน้านี้เห็นร่วมกันและอัปเดตทันที</div>`; }
+  else { b.className="banner"; b.innerHTML=`<span class="dot s-watch" style="margin-top:6px"></span><div><b>กำลังแสดงข้อมูลจำลอง</b> สร้างให้ค่าเฉลี่ยตรงกับค่าสะสมฤดู 68/69 ของโรงงาน ${f} เพื่อให้เห็นการทำงานของการพยากรณ์ ${state.dbReady?`<button class="linkbtn" id="goData">นำเข้าข้อมูลจริง</button> เพื่อเริ่มใช้งาน`:"ล็อกอินเพื่อใช้ข้อมูลจริง"}</div>`;
+    const g=$("#goData"); if(g) g.onclick=()=>setTab("data"); }
+}
+
+/* ---------- overview ---------- */
+function renderOverview(){
+  const f=state.factory, list=analyses(f).list.filter(a=>a.status!=="ok"&&a.status!=="info").sort((a,b)=>b.score-a.score).slice(0,10);
+  let h=`<div class="prow head"><span></span><span>พารามิเตอร์</span><span class="v">เป้า</span><span class="v hide-s">สะสม</span><span class="v hide-s">7 วันล่าสุด</span><span class="v">พยากรณ์ 7 วัน</span><span></span></div>`;
+  if(!list.length) h+=`<div class="empty">ทุกพารามิเตอร์ของโรงงาน ${f} อยู่ในเป้าและไม่มีแนวโน้มหลุดเป้าใน 14 วัน</div>`;
+  for(const a of list){
+    const lab=unitLabel(a.u);
+    h+=`<button class="prow" data-k="${a.p.id}|${a.u}">
+      <span class="bar" style="background:var(${ST[a.p.st].c})"></span>
+      <span class="nm">${esc(a.p.name)}<small><span class="pill ${a.status}" style="margin-right:6px">${a.status==="bad"?"หลุดเป้า":"เฝ้าระวัง"}</span>${ST[a.p.st].name}${lab?" "+lab:""}</small></span>
+      <span class="v">${tgtText(a.p,a.t)}</span>
+      <span class="v hide-s">${fmt(a.todate,a.p.dec)}</span>
+      <span class="v hide-s">${fmt(a.last7,a.p.dec)}</span>
+      <span class="v">${fmt(a.fc[6].m,a.p.dec)}<small>${a.dtb?`หลุดใน ~${a.dtb} วัน`:`โอกาสหลุด ${Math.round(a.risk7*100)}%`}</small></span>
+      <span class="trend" style="color:${trendColor(a)}" title="แนวโน้ม 14 วัน">${trendArrow(a)}</span></button>`;
+  }
+  $("#plist").innerHTML=h;
+  $("#plist").querySelectorAll("button.prow").forEach(b=>b.onclick=()=>openDetail(b.dataset.k));
+  renderSaved();
+  $("#aiBtn").textContent= sampleFn ? `วิเคราะห์โรงงาน ${f}` : `คัดลอกข้อมูล ${f} ไปให้ Claude`;
+}
+
+/* ---------- params grid ---------- */
+function spark(a){
+  const W=260,H=56,hist=a.y.slice(Math.max(0,a.last-44),a.last+1), fc=a.fc||[];
+  const vals=hist.filter(v=>v!=null).concat(fc.map(x=>x.m+x.s*1.3),fc.map(x=>x.m-x.s*1.3));
+  const tv=a.t==null?[]:Array.isArray(a.t)?a.t:[a.t]; vals.push(...tv);
+  let lo=Math.min(...vals),hi=Math.max(...vals); if(hi-lo<1e-9){hi+=1;lo-=1;} const pad=(hi-lo)*.08; lo-=pad;hi+=pad;
+  const N=hist.length+fc.length, X=i=>i/(N-1)*W, Y=v=>H-(v-lo)/(hi-lo)*H;
+  let d="",pen=false; hist.forEach((v,i)=>{ if(v==null){pen=false;return;} d+=(pen?"L":"M")+X(i).toFixed(1)+","+Y(v).toFixed(1); pen=true; });
+  const i0=hist.length-1, lastV=hist.filter(v=>v!=null).slice(-1)[0];
+  let band="",fl=`M${X(i0).toFixed(1)},${Y(a.lp??lastV).toFixed(1)}`;
+  if(fc.length){ const up=fc.map((x,k)=>`${X(i0+k+1).toFixed(1)},${Y(x.m+1.28*x.s).toFixed(1)}`), dn=fc.map((x,k)=>`${X(i0+k+1).toFixed(1)},${Y(x.m-1.28*x.s).toFixed(1)}`).reverse();
+    band=`<polygon points="${up.join(" ")} ${dn.join(" ")}" fill="var(--fc)" opacity=".18"/>`; fc.forEach((x,k)=>fl+=`L${X(i0+k+1).toFixed(1)},${Y(x.m).toFixed(1)}`); }
+  const tl=tv.map(t=>`<line x1="0" x2="${W}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" stroke="var(--bad)" stroke-width="1" stroke-dasharray="4 3" opacity=".8"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${tl}${band}<path d="${d}" fill="none" stroke="var(--ink2)" stroke-width="1.4"/><path d="${fc.length?fl:""}" fill="none" stroke="var(--fc)" stroke-width="2" stroke-dasharray="3 2"/><line x1="${X(i0)}" x2="${X(i0)}" y1="0" y2="${H}" stroke="var(--line)"/></svg>`;
+}
+function renderParams(){
+  const f=state.factory, list=analyses(f).list;
+  let fh=`<button class="chip" data-st="all" aria-pressed="${state.station==="all"}">ทุกสถานี</button>`;
+  for(const st of ["M","E","V","C"]){ const b=list.filter(a=>a.p.st===st&&a.status==="bad").length; fh+=`<button class="chip" data-st="${st}" aria-pressed="${state.station===st}"><span class="sw" style="background:var(${ST[st].c})"></span>${ST[st].n} ${ST[st].name}${b?` <span class="pill bad" style="padding:0 7px">${b}</span>`:""}</button>`; }
+  $("#stFilters").innerHTML=fh;
+  $("#stFilters").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{state.station=c.dataset.st;renderParams();});
+  let h="";
+  for(const st of ["M","E","V","C"]){ if(state.station!=="all"&&state.station!==st) continue;
+    const l=list.filter(a=>a.p.st===st); if(!l.length) continue;
+    h+=`<div class="stsec"><h3><span class="stno" style="background:var(${ST[st].c})">${ST[st].n}</span>${ST[st].full}</h3><div class="cards">`;
+    for(const a of l){ const lab=unitLabel(a.u), sc=a.status;
+      h+=`<button class="card" data-k="${a.p.id}|${a.u}" style="border-left-color:var(${sc==="bad"?"--bad":sc==="watch"?"--watch":sc==="ok"?"--ok":"--line"})">
+        <div class="ct"><b>${esc(a.p.name)}<small>${lab?lab+" ":""}${a.p.u}</small></b><span class="pill ${sc}">${sc==="bad"?"หลุดเป้า":sc==="watch"?"เฝ้าระวัง":sc==="ok"?"ในเป้า":"ไม่มีเป้า"}</span></div>
+        <div class="val">${fmt(a.todate,a.p.dec)}<small>สะสม, เป้า ${tgtText(a.p,a.t)}</small></div>
+        ${a.insufficient?`<div class="fc">ข้อมูลยังไม่พอพยากรณ์ (ต้องมีอย่างน้อย 8 วัน)</div>`:`${spark(a)}<div class="fc">พยากรณ์ 7 วัน ${fmt(a.fc[6].m,a.p.dec)} ${a.t!=null?`, โอกาสหลุดเป้า ${Math.round(a.risk7*100)}%`:""} <span style="color:${trendColor(a)}">${trendArrow(a)}</span></div>`}
+      </button>`; }
+    h+=`</div></div>`; }
+  $("#paramSections").innerHTML=h;
+  $("#paramSections").querySelectorAll(".card").forEach(c=>c.onclick=()=>openDetail(c.dataset.k));
+}
+
+/* ---------- detail ---------- */
+function openDetail(k){
+  const [id,u]=k.split("|"), a=findA(state.factory,id,u); if(!a) return; const p=a.p, lab=unitLabel(u);
+  $("#dlgTitle").textContent=p.name+(lab?` (${lab})`:"");
+  $("#dlgSub").textContent=`${ST[p.st].full}, โรงงาน ${state.factory}, หน่วย ${p.u}, เป้า ${tgtText(p,a.t)}`;
+  let h="";
+  if(a.insufficient){ h=`<p>มีข้อมูล ${a.nobs} วัน ต้องมีอย่างน้อย 8 วันจึงจะพยากรณ์ได้</p>`; }
+  else {
+    h+=`<div class="chartbox"><canvas id="dchart" aria-label="กราฟข้อมูลและพยากรณ์"></canvas></div>
+    <div class="stats">
+      <div><small>สะสม (todate)</small><b>${fmt(a.todate,p.dec)}</b></div>
+      <div><small>เฉลี่ย 7 วันล่าสุด</small><b>${fmt(a.last7,p.dec)}</b></div>
+      <div><small>พยากรณ์ 7 วัน</small><b>${fmt(a.fc[6].m,p.dec)}</b></div>
+      <div><small>ช่วง 80% ที่ 7 วัน</small><b style="font-size:14px">${fmt(a.fc[6].m-1.28*a.fc[6].s,p.dec)} ถึง ${fmt(a.fc[6].m+1.28*a.fc[6].s,p.dec)}</b></div>
+      <div><small>พยากรณ์ 14 วัน</small><b>${fmt(a.fc[13].m,p.dec)}</b></div>
+      <div><small>แนวโน้มต่อสัปดาห์</small><b style="color:${trendColor(a)}">${a.wk>=0?"+":""}${fmt(a.wk,p.dec)}</b></div>
+      <div><small>โอกาสหลุดเป้าใน 7 วัน</small><b>${a.risk7==null?"–":Math.round(a.risk7*100)+"%"}</b></div>
+      <div><small>ขอบเขตควบคุม 30 วัน (±2σ)</small><b style="font-size:14px">${fmt(a.LL,p.dec)} ถึง ${fmt(a.UL,p.dec)}</b></div>
+    </div>`;
+    h+= a.flags.length ? `<ul class="flags">${a.flags.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>` : `<p class="muted">ไม่พบสัญญาณผิดปกติทางสถิติ (SPC) ใน 30 วันล่าสุด</p>`;
+    if(a.dtb) h+=`<p><b style="color:var(--bad)">ถ้าแนวโน้มยังเป็นแบบนี้ คาดว่าจะหลุดเป้าในประมาณ ${a.dtb} วัน</b></p>`;
+  }
+  h+=`<div class="two" style="margin-top:12px"><div><h4 style="margin:0 0 4px">สิ่งที่ควรตรวจเมื่อค่าหลุดเป้าหรือมีแนวโน้มแย่ลง</h4><ul class="recs">${p.rec.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>
+  <div><h4 style="margin:0 0 4px">มีผลต่อ</h4><p style="margin:0 0 10px">${esc(p.affects)}</p><h4 style="margin:0 0 4px">วิธีพยากรณ์</h4><p class="muted" style="margin:0">Holt damped trend ปรับพารามิเตอร์อัตโนมัติจาก 60 วันล่าสุด (α=${a.H?a.H.al:"–"}, β=${a.H?a.H.be:"–"}) ช่วงพยากรณ์คำนวณจากความคลาดเคลื่อนย้อนหลัง</p></div></div>`;
+  $("#dlgBody").innerHTML=h;
+  $("#dlg").showModal();
+  if(!a.insufficient) drawChart(a);
+}
+function drawChart(a){
+  if(chart){chart.destroy();chart=null;} if(typeof Chart==="undefined"){ $("#dchart").parentElement.innerHTML=`<p class="muted">โหลดไลบรารีกราฟไม่สำเร็จ</p>`; return; }
+  const p=a.p, n=a.last+1, N=n+14, labels=Array.from({length:N},(_,i)=>i+1);
+  const ink=cssv("--ink2")||"#4B5B50", line=cssv("--line")||"#D3DBD0", fc=cssv("--fc")||"#C99314", bad=cssv("--bad")||"#C0392B", st=cssv(ST[p.st].c)||"#2F6B45";
+  const hist=a.y.slice(0,n).concat(new Array(14).fill(null));
+  const ma=[]; for(let i=0;i<N;i++){ if(i>=n){ma.push(null);continue;} const w=a.y.slice(Math.max(0,i-6),i+1).filter(v=>v!=null); ma.push(w.length>=4?mean(w):null); }
+  const pad=new Array(n-1).fill(null), fM=pad.concat([a.lp],a.fc.map(x=>x.m)), fU=pad.concat([a.lp],a.fc.map(x=>x.m+1.28*x.s)), fL=pad.concat([a.lp],a.fc.map(x=>x.m-1.28*x.s));
+  const flat=v=>new Array(N).fill(v);
+  const ds=[
+    {label:"ค่ารายวัน",data:hist,borderColor:hexA(st.startsWith("#")?st:"#2F6B45",.55),backgroundColor:st,pointRadius:1.8,borderWidth:1,spanGaps:false,order:3},
+    {label:"เฉลี่ย 7 วัน",data:ma,borderColor:st,borderWidth:2.2,pointRadius:0,order:2},
+    {label:"พยากรณ์",data:fM,borderColor:fc,borderDash:[5,4],borderWidth:2.2,pointRadius:0,order:1},
+    {label:"ช่วง 80% บน",data:fU,borderColor:"transparent",pointRadius:0,fill:false},
+    {label:"ช่วง 80%",data:fL,borderColor:"transparent",pointRadius:0,fill:"-1",backgroundColor:hexA(fc.startsWith("#")?fc:"#C99314",.2)},
+    {label:"UCL/LCL 30 วัน",data:flat(a.UL),borderColor:ink,borderDash:[2,4],borderWidth:1,pointRadius:0},
+    {label:"_LCL",data:flat(a.LL),borderColor:ink,borderDash:[2,4],borderWidth:1,pointRadius:0}
+  ];
+  const tv=a.t==null?[]:Array.isArray(a.t)?a.t:[a.t];
+  tv.forEach((t,i)=>ds.push({label:i?"_เป้า":"เป้าหมาย",data:flat(t),borderColor:bad,borderWidth:1.6,borderDash:[7,4],pointRadius:0}));
+  chart=new Chart($("#dchart"),{type:"line",data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{labels:{color:ink,boxWidth:14,font:{family:"IBM Plex Sans Thai"},filter:i=>!i.text.startsWith("_")&&i.text!=="ช่วง 80% บน"}},
+      tooltip:{filter:i=>i.raw!=null&&!i.dataset.label.startsWith("_")&&i.dataset.label!=="ช่วง 80% บน",callbacks:{title:it=>`วันหีบที่ ${it[0].label}${+it[0].label>n?" (พยากรณ์)":""}`,label:c=>`${c.dataset.label}: ${fmt(c.raw,p.dec)}`}}},
+    scales:{x:{ticks:{color:ink,maxTicksLimit:12},grid:{color:line},title:{display:true,text:"วันหีบ",color:ink}},y:{ticks:{color:ink},grid:{color:line}}}}});
+}
+$("#dlgClose").onclick=()=>$("#dlg").close();
+$("#dlg").addEventListener("click",e=>{ if(e.target===$("#dlg")) $("#dlg").close(); });
+
+/* ---------- loss & yield ---------- */
+const LCOL={mill:"--cane",fc:"--steam",mol:"--mol",undet:"--ink3"}, LNAME={mill:"Milling loss (ชานอ้อย)",fc:"กากตะกอน",mol:"กากน้ำตาล",undet:"ไม่ทราบสาเหตุ"};
+function defaultsWI(f){ const g=(id,u)=>findA(f,id,u)?.todate||0; const tch = f==="AB" ? g("tch","A")+g("tch","B") : g("tch",f); return {cane:Math.round(tch*21*FACT[f].days/1000)*1000, pol:13.5, price:17000}; }
+function renderLoss(){
+  const f=state.factory; let mx=0; const L={}; for(const g of ["AB","C","S"]){L[g]=lossParts(g); mx=Math.max(mx,L[g].total);}
+  let h=""; for(const g of ["AB","C","S"]){ h+=`<div class="lrow"><b>${g}</b><div class="stack" style="width:${(L[g].total/mx*100).toFixed(1)}%">${["mill","fc","mol","undet"].map(k=>`<span title="${LNAME[k]} ${fmt(L[g][k])}%" style="width:${((L[g][k]||0)/L[g].total*100).toFixed(2)}%;background:var(${LCOL[k]});${k==="undet"?"opacity:.55":""}"></span>`).join("")}</div><span class="num" style="text-align:right;font-weight:${g===f?700:400}">${fmt(L[g].total)}%</span></div>`; }
+  $("#lossStack").innerHTML=h;
+  $("#lossLegend").innerHTML=["mill","fc","mol","undet"].map(k=>`<span><i style="background:var(${LCOL[k]});${k==="undet"?"opacity:.55":""}"></i>${LNAME[k]}</span>`).join("");
+
+  const key="wi_"+f, wi=store.get(key,null)||defaultsWI(f);
+  $("#whatifInputs").innerHTML=`<label class="f">อ้อยทั้งฤดู (ตัน)<input id="wiCane" type="number" step="1000" value="${wi.cane}"></label>
+    <label class="f">Pol % อ้อย<input id="wiPol" type="number" step="0.1" value="${wi.pol}"></label>
+    <label class="f">ราคาน้ำตาลทรายดิบ (บาท/ตัน)<input id="wiPrice" type="number" step="100" value="${wi.price}"></label>`;
+  const cur=L[f], best=Math.min(L.AB.undet,L.C.undet,L.S.undet);
+  const sl=[["mill","Milling loss",1.5,.05],["fc","กากตะกอน",.2,.01],["mol","กากน้ำตาล",2,.05],["undet","ไม่ทราบสาเหตุ",8,.1]];
+  $("#sliders").innerHTML=sl.map(([k,n,max,step])=>`<div class="slider"><label for="sl_${k}">ลด ${n}<small>ตอนนี้ ${fmt(cur[k])}% pol อ้อย</small></label><output id="o_${k}" class="num">0.00</output><input type="range" id="sl_${k}" min="0" max="${Math.min(max,cur[k]||0).toFixed(2)}" step="${step}" value="0"></div>`).join("");
+  const calc=()=>{
+    const cane=+$("#wiCane").value||0, pol=+$("#wiPol").value||0, price=+$("#wiPrice").value||0;
+    store.set(key,{cane,pol,price});
+    let d=0; for(const [k] of sl){ const v=+$("#sl_"+k).value; $("#o_"+k).textContent="−"+fmt(v); d+=v; }
+    const polT=cane*pol/100*d/100, sugar=polT/0.985;
+    $("#whatifOut").innerHTML=`<div><small>Total loss ใหม่</small><b>${fmt(cur.total-d)}%</b></div>
+      <div><small>Pol กลับคืน</small><b>${fmt(100-cur.total+d)}%</b></div>
+      <div><small>น้ำตาลทรายดิบเพิ่ม</small><b>${fmt(sugar,0)} ตัน</b></div>
+      <div><small>เพิ่มต่อตันอ้อย</small><b>${fmt(cane?sugar/cane*1000:0,2)} กก.</b></div>
+      <div><small>มูลค่าโดยประมาณ</small><b>${fmt(sugar*price/1e6,2)} ล้านบาท</b></div>`;
+  };
+  $("#p-loss").querySelectorAll("input").forEach(i=>i.oninput=calc);
+  $("#toTarget").onclick=()=>{ const mt=PBY.mol_loss.t[f]; $("#sl_mol").value=Math.max(0,cur.mol-mt).toFixed(2); $("#sl_undet").value=Math.max(0,cur.undet-best).toFixed(1); $("#sl_mill").value=0; $("#sl_fc").value=0; calc(); };
+  $("#resetSl").onclick=()=>{ sl.forEach(([k])=>$("#sl_"+k).value=0); calc(); };
+  calc();
+  renderDrivers();
+}
+function pearson(a,b){ const xs=[],ys=[]; for(let i=0;i<Math.min(a.length,b.length);i++){ if(a[i]!=null&&b[i]!=null&&a[i]!==0&&b[i]!==0){xs.push(a[i]);ys.push(b[i]);} }
+  if(xs.length<15) return null; const mx=mean(xs),my=mean(ys); let n=0,dx=0,dy=0; for(let i=0;i<xs.length;i++){n+=(xs[i]-mx)*(ys[i]-my);dx+=(xs[i]-mx)**2;dy+=(ys[i]-my)**2;} return dx&&dy?{r:n/Math.sqrt(dx*dy),n:xs.length}:null; }
+function renderDrivers(){
+  const f=state.factory, {D}=analyses(f), u0=f;
+  const col = tid => { const T=D.series[`${tid}|${u0}`]; if(!T) return `<p class="muted">ไม่มีข้อมูล</p>`;
+    const res=[]; for(const k in D.series){ const [pid,u]=k.split("|"); if(pid===tid||["mol_loss","undet_loss"].includes(pid)) continue; const r=pearson(D.series[k],T); if(r) res.push({pid,u,...r}); }
+    res.sort((a,b)=>Math.abs(b.r)-Math.abs(a.r));
+    return res.slice(0,7).map(x=>{ const w=Math.abs(x.r)*50, l=x.r>=0?50:50-w; return `<div class="drv"><span>${esc(PBY[x.pid].name)}${unitLabel(x.u)?` <span class="muted">${unitLabel(x.u)}</span>`:""}</span><span class="rb"><i style="left:${l}%;width:${w}%;background:var(${x.r>=0?"--bad":"--steam"})"></i></span><span class="num" style="text-align:right">${x.r>=0?"+":""}${x.r.toFixed(2)}</span></div>`; }).join("") || `<p class="muted">ข้อมูลยังไม่พอ (ต้องมีวันที่ข้อมูลตรงกันอย่างน้อย 15 วัน)</p>`; };
+  $("#drivers").innerHTML=`<div><h4 style="margin:0 0 6px">กับ loss ในกากน้ำตาล</h4>${col("mol_loss")}</div><div><h4 style="margin:0 0 6px">กับ undetermined loss</h4>${col("undet_loss")}</div>`;
+}
+
+/* ---------- data entry / import ---------- */
+function renderData(){
+  const ef=$("#entryFactory"); if(!ef.dataset.touched) ef.value=state.factory;
+  const f=ef.value, D=analyses(f).D; const dayEl=$("#entryDay"); if(!dayEl.dataset.touched) dayEl.value=(realCount(f)?D.n:0)+1;
+  let h="";
+  for(const u of FACT[f].units){ const ps=P.filter(p=>paramUnits(p,f).includes(u)); if(!ps.length) continue;
+    h+=`<fieldset><legend>${u==="AB"?"โรงงาน AB (ทำใส ระเหย เคี่ยว ปั่น)":unitLabel(u)||"โรงงาน "+u}</legend><div class="form">${ps.map(p=>`<label class="f">${esc(p.name)} <span class="muted">${tgtText(p,p.t[u]??null)}</span><input type="number" step="any" inputmode="decimal" data-k="${p.id}|${u}"></label>`).join("")}</div></fieldset>`; }
+  $("#entryFields").innerHTML=h;
+  const can=!!db&&state.canEdit; $("#entrySave").disabled=!can; $("#csvImport").disabled=!can; $("#clearBtn").disabled=!can;
+  if(!can) $("#entryMsg").textContent="บัญชีนี้ยังไม่อยู่ในรายชื่อผู้แก้ไขข้อมูล ติดต่อผู้ดูแลเพื่อเพิ่มสิทธิ์";
+  $("#dict").innerHTML=`<tr><th>รหัส</th><th>พารามิเตอร์</th><th>สถานี</th><th>หน่วย</th><th>เป้า AB / A / B</th><th>เป้า C</th><th>เป้า S</th></tr>`+
+    P.map(p=>`<tr><td><code>${p.id}</code></td><td>${esc(p.name)}</td><td>${ST[p.st].name}</td><td>${p.u}</td><td>${["AB","A","B"].filter(u=>u in p.t||u in p.td).map(u=>`${u}: ${tgtText(p,p.t[u]??null)}`).join("<br>")||"–"}</td><td>${"C" in p.td?tgtText(p,p.t.C??null):"–"}</td><td>${"S" in p.td?tgtText(p,p.t.S??null):"–"}</td></tr>`).join("");
+}
+$("#entryFactory").onchange=e=>{e.target.dataset.touched=1; $("#entryDay").dataset.touched=""; renderData();};
+$("#entryDay").oninput=e=>e.target.dataset.touched=1;
+
+const TS=()=>firebase.firestore.FieldValue.serverTimestamp();
+const dayRef=(f,day)=>db.collection("factories").doc(f).collection("days").doc(String(day));
+async function writeDays(updates){ // updates: {f:{key:{day:val}}}
+  const byDay=[]; for(const f in updates){ const perDay={}; for(const k in updates[f]) for(const d in updates[f][k]) ((perDay[d] ||= {}))[k]=updates[f][k][d]; for(const d in perDay) byDay.push([f,+d,perDay[d]]); }
+  for(let i=0;i<byDay.length;i+=400){ const b=db.batch(); for(const [f,d,vals] of byDay.slice(i,i+400)) b.set(dayRef(f,d),{day:d,values:vals,updatedAt:TS()},{merge:true}); await b.commit(); }
+  return byDay.length;
+}
+const errText = e => e&&e.code==="permission-denied" ? "บัญชีนี้ไม่มีสิทธิ์แก้ไขข้อมูล" : "บันทึกไม่สำเร็จ ลองอีกครั้ง";
+$("#entrySave").onclick=async()=>{
+  const f=$("#entryFactory").value, day=parseInt($("#entryDay").value,10), msg=$("#entryMsg");
+  if(!(day>=1)){ msg.className="msg err"; msg.textContent="ใส่วันที่หีบเป็นตัวเลขตั้งแต่ 1 ขึ้นไป"; return; }
+  const vals={}; let c=0;
+  $("#entryFields").querySelectorAll("input").forEach(i=>{ if(i.value.trim()==="") return; const v=+i.value; if(!isFinite(v)) return; vals[i.dataset.k]=v; c++; });
+  if(!c){ msg.className="msg err"; msg.textContent="ยังไม่ได้กรอกค่าใด"; return; }
+  $("#entrySave").disabled=true;
+  try{ await dayRef(f,day).set({day,values:vals,updatedAt:TS()},{merge:true}); msg.className="msg good"; msg.textContent=`บันทึกแล้ว ${c} ค่า ของโรงงาน ${f} วันหีบที่ ${day}`; $("#entryDay").value=day+1; $("#entryFields").querySelectorAll("input").forEach(i=>i.value=""); }
+  catch(e){ msg.className="msg err"; msg.textContent=errText(e); }
+  $("#entrySave").disabled=false;
+};
+function parseCSV(text){
+  const lines=text.replace(/\r/g,"").split("\n").filter(l=>l.trim()); if(lines.length<2) throw new Error("ต้องมีแถวหัวตารางและข้อมูลอย่างน้อย 1 แถว");
+  const split=l=>{const out=[];let cur="",q=false;for(const ch of l){if(ch==='"'){q=!q;}else if((ch===","||ch==="\t"||ch===";")&&!q){out.push(cur);cur="";}else cur+=ch;}out.push(cur);return out.map(s=>s.trim());};
+  const head=split(lines[0]).map(h=>h.toLowerCase()); const di=head.indexOf("day"), ui=head.indexOf("unit");
+  if(di<0||ui<0) throw new Error("ไม่พบคอลัมน์ day และ unit ในแถวแรก");
+  const unknown=head.filter((h,i)=>i!==di&&i!==ui&&h&&!PBY[h]);
+  const upd={AB:{},C:{},S:{}}; let cnt=0, bad=0;
+  for(let r=1;r<lines.length;r++){ const c=split(lines[r]); const day=parseInt(c[di],10), u=(c[ui]||"").toUpperCase(), f=UNIT_FACT[u];
+    if(!(day>=1)||!f){bad++;continue;}
+    head.forEach((h,i)=>{ if(!PBY[h]||c[i]===""||c[i]==null) return; const v=parseFloat(c[i].replace(/,(?=\d{3})/g,"")); if(!isFinite(v)) return; ((upd[f][`${h}|${u}`] ||= {}))[day]=v; cnt++; }); }
+  return {upd,cnt,bad,unknown};
+}
+$("#csvFile").onchange=e=>{ const file=e.target.files[0]; if(!file) return; const rd=new FileReader(); rd.onload=()=>{$("#csvText").value=rd.result;}; rd.readAsText(file); };
+$("#csvImport").onclick=async()=>{
+  const msg=$("#csvMsg"); let res; try{ res=parseCSV($("#csvText").value); }catch(e){ msg.className="msg err"; msg.textContent=e.message; return; }
+  if(!res.cnt){ msg.className="msg err"; msg.textContent="ไม่พบค่าตัวเลขที่ตรงกับรหัสพารามิเตอร์"; return; }
+  $("#csvImport").disabled=true; const done=[];
+  try{ for(const f of ["AB","C","S"]) if(Object.keys(res.upd[f]).length) done.push(f); await writeDays(res.upd);
+    msg.className="msg good"; msg.textContent=`นำเข้าแล้ว ${res.cnt.toLocaleString("th-TH")} ค่า (โรงงาน ${done.join(", ")})${res.bad?`, ข้าม ${res.bad} แถวที่ day/unit ไม่ถูกต้อง`:""}${res.unknown.length?`, ไม่รู้จักคอลัมน์: ${esc(res.unknown.slice(0,6).join(", "))}`:""}`; }
+  catch(e){ msg.className="msg err"; msg.textContent=errText(e); }
+  $("#csvImport").disabled=false;
+};
+$("#clearBtn").onclick=async()=>{ const f=state.factory; if(!confirm(`ลบข้อมูลที่บันทึกของโรงงาน ${f} ทั้งหมด? ทุกคนที่ใช้หน้านี้จะเห็นผลเช่นกัน`)) return;
+  try{ const s=await db.collection("factories").doc(f).collection("days").get(); for(let i=0;i<s.docs.length;i+=400){ const b=db.batch(); s.docs.slice(i,i+400).forEach(d=>b.delete(d.ref)); await b.commit(); } $("#csvMsg").className="msg good"; $("#csvMsg").textContent=`ลบข้อมูลโรงงาน ${f} แล้ว`; }catch(e){ $("#csvMsg").className="msg err"; $("#csvMsg").textContent=errText(e); } };
+function templateCSV(){ const ids=P.map(p=>p.id); const rows=["day,unit,"+ids.join(",")]; for(const u of ["A","B","AB","C","S"]) rows.push(`1,${u},`+ids.map(id=>{const p=PBY[id];return u in p.td?"":"";}).join(",")); return rows.join("\n"); }
+$("#tplBtn").onclick=async()=>{
+  const txt=templateCSV();
+  if(downloadsCap){ try{ await downloadsCap.save({filename:"control-parameters-template.csv",data:"\ufeff"+txt}); return; }catch(e){ if(e&&e.code==="declined") return; } }
+  $("#csvText").value=txt; $("#csvMsg").className="msg"; $("#csvMsg").textContent="วางแม่แบบไว้ในช่องด้านบนแล้ว คัดลอกไปใช้ใน Excel ได้";
+};
+
+/* ---------- Claude analysis ---------- */
+function mdLite(t){ const lines=esc(t).split("\n"); let h="",ul=false; const close=()=>{if(ul){h+="</ul>";ul=false;}};
+  for(let l of lines){ l=l.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+    if(/^#{1,4}\s/.test(l)){close();h+=`<h4>${l.replace(/^#+\s/,"")}</h4>`;}
+    else if(/^\s*([-*•]|\d+\.)\s/.test(l)){ if(!ul){h+="<ul>";ul=true;} h+=`<li>${l.replace(/^\s*([-*•]|\d+\.)\s/,"")}</li>`; }
+    else if(!l.trim()) close(); else {close();h+=`<p>${l}</p>`;} } close(); return h; }
+function buildPrompt(f){
+  const {D,list}=analyses(f), L=lossParts(f);
+  const rows=list.filter(a=>!a.insufficient).map(a=>[ST[a.p.st].name,a.p.name,a.u,a.p.dir==="max"?"ยิ่งต่ำยิ่งดี":a.p.dir==="min"?"ยิ่งสูงยิ่งดี":a.p.dir==="range"?"ควรอยู่ในช่วง":"-",tgtText(a.p,a.t),fmt(a.todate,a.p.dec),fmt(a.last7,a.p.dec),(a.wk>=0?"+":"")+fmt(a.wk,a.p.dec),fmt(a.fc[6].m,a.p.dec),a.risk7==null?"-":Math.round(a.risk7*100)+"%",a.status,a.flags.join("; ")||"-"].join(" | "));
+  return `คุณเป็นวิศวกรกระบวนการอาวุโสของโรงงานน้ำตาลทรายดิบในประเทศไทย วิเคราะห์ข้อมูลโรงงาน ${f} ฤดูหีบ ${SEASON} ถึงวันหีบที่ ${D.n}${D.source==="demo"?" (หมายเหตุ: ข้อมูลนี้เป็นข้อมูลจำลองเพื่อสาธิต ให้บอกผู้ใช้สั้นๆ ตอนต้น)":""}
+โรงงาน AB มีชุดลูกหีบ A และ B แยกกัน ส่วนสถานีอื่นรวมเป็น AB
+คอลัมน์: สถานี | พารามิเตอร์ | ชุด | ทิศทางที่ดี | เป้า | สะสม | เฉลี่ย 7 วัน | แนวโน้มต่อสัปดาห์ | พยากรณ์ 7 วัน (Holt) | โอกาสหลุดเป้าใน 7 วัน | สถานะ | สัญญาณ SPC
+${rows.join("\n")}
+Loss สะสม (% pol ในอ้อย): milling ${fmt(L.mill)}, กากตะกอน ${fmt(L.fc)}, กากน้ำตาล ${fmt(L.mol)}, ไม่ทราบสาเหตุ ${fmt(L.undet)}, รวม ${fmt(L.total)}
+เปรียบเทียบ undetermined loss: AB ${fmt(lossParts("AB").undet)}, C ${fmt(lossParts("C").undet)}, S ${fmt(lossParts("S").undet)}
+
+ตอบเป็นภาษาไทย กระชับ ใช้ markdown อย่างง่าย (## หัวข้อ, bullet, **ตัวหนา**) ไม่เกิน 380 คำ:
+## สรุปสถานะ
+2-3 ประโยค
+## 3 เรื่องที่ต้องทำก่อน
+แต่ละข้อ: ปัญหา, สาเหตุที่เป็นไปได้โดยอ้างความสัมพันธ์ระหว่างพารามิเตอร์ในตาราง, สิ่งที่ทำได้ใน 24-72 ชั่วโมง
+## พารามิเตอร์ที่กำลังจะหลุดเป้า
+## โอกาสเพิ่ม yield
+ประเมินเชิงตัวเลขจาก loss ที่ลดได้จริง
+อย่าแต่งตัวเลขที่ไม่มีในข้อมูล`;
+}
+/* ---------- saved analyses ---------- */
+state.saved=[];
+function makeRecord(f,text,via){
+  const {D,list}=analyses(f), L=lossParts(f);
+  const rows=list.filter(a=>a.status==="bad"||a.status==="watch").sort((a,b)=>b.score-a.score).slice(0,10).map(a=>({st:ST[a.p.st].name,name:a.p.name,unit:unitLabel(a.u),status:a.status,target:tgtText(a.p,a.t),todate:fmt(a.todate,a.p.dec),last7:fmt(a.last7,a.p.dec),fc7:fmt(a.fc[6].m,a.p.dec),risk:a.risk7==null?"–":Math.round(a.risk7*100)+"%"}));
+  return {factory:f,day:D.n,source:D.source,via,text,createdAt:new Date().toISOString(),rows,loss:{mill:L.mill,fc:L.fc,mol:L.mol,undet:L.undet,total:L.total}};
+}
+function thDate(iso){ try{ return new Date(iso).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"}); }catch(e){ return iso; } }
+async function saveRecord(rec){
+  const stt=$("#aiState");
+  if(!db||!state.canEdit){ stt.textContent="บัญชีนี้ไม่มีสิทธิ์บันทึกผลวิเคราะห์ แต่ดาวน์โหลด HTML ได้"; return; }
+  try{ await db.collection("analyses").doc(`${rec.factory}_${Date.now()}`).set(rec); stt.textContent="บันทึกให้ทุกคนดูแล้ว"; const m=$("#pasteMsg"); if(m){m.className="msg good";m.textContent="บันทึกแล้ว";} }
+  catch(e){ stt.textContent= e&&e.code==="invalid_argument" ? "บัญชีนี้ไม่มีสิทธิ์บันทึก แต่ดาวน์โหลด HTML ได้" : "บันทึกไม่สำเร็จ แต่ดาวน์โหลด HTML ได้"; }
+}
+function showResultActions(rec){
+  const box=document.createElement("div"); box.className="row"; box.style.marginTop="12px";
+  box.innerHTML=`<button class="btn sm">บันทึกเป็นไฟล์ HTML</button>`;
+  box.querySelector("button").onclick=()=>downloadReport(rec);
+  $("#aiOut").appendChild(box);
+}
+function reportHTML(rec){
+  const logo=document.querySelector(".logo")?.src||"";
+  const L=rec.loss||{}, st={bad:"หลุดเป้า",watch:"เฝ้าระวัง"};
+  const rows=(rec.rows||[]).map(r=>`<tr><td><span class="pill ${r.status}">${st[r.status]||r.status}</span></td><td><b>${esc(r.name)}</b><br><small>${esc(r.st)}${r.unit?" "+esc(r.unit):""}</small></td><td>${esc(r.target)}</td><td>${esc(r.todate)}</td><td>${esc(r.last7)}</td><td>${esc(r.fc7)}</td><td>${esc(r.risk)}</td></tr>`).join("");
+  return `<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ผลวิเคราะห์โรงงาน ${esc(rec.factory)} วันหีบที่ ${rec.day}</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EAF2FB;color:#0F2A4A;font-family:"IBM Plex Sans Thai","Leelawadee UI",Tahoma,sans-serif;line-height:1.65}
+.w{max-width:960px;margin:0 auto;padding:24px 18px 48px}
+.hd{display:flex;gap:16px;align-items:center;background:linear-gradient(135deg,#040A14,#081528 55%,#0D2042);color:#EEF4FD;border-radius:16px;padding:20px 22px}
+.hd img{width:76px;background:#fff;border-radius:12px;padding:5px 7px}
+.hd h1{margin:0;font-size:22px}.hd p{margin:2px 0 0;color:#A9BEDA;font-size:14px}
+.demo{background:#FFF6DC;border:1px dashed #C28A00;color:#6B5000;border-radius:10px;padding:8px 12px;margin-top:14px;font-size:14px}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0}
+.kpi div{background:#fff;border:1px solid #D3E1F0;border-radius:12px;padding:10px 12px}
+.kpi small{display:block;color:#7D93AE;font-size:12px}.kpi b{font-size:20px}
+.card{background:#fff;border:1px solid #D3E1F0;border-radius:14px;padding:18px 20px;margin-top:16px}
+.card h2{margin:0 0 10px;font-size:17px}
+.ai h4{margin:14px 0 4px;font-size:15.5px;color:#1C6FD6}.ai h4:first-child{margin-top:0}.ai ul{margin:4px 0 8px;padding-left:22px}.ai p{margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th,td{padding:7px 6px;border-top:1px solid #D3E1F0;text-align:right;vertical-align:top}
+th{color:#7D93AE;font-weight:600;border-top:0}td:nth-child(-n+2),th:nth-child(-n+2){text-align:left}small{color:#7D93AE}
+.pill{font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;border:1px solid}.pill.bad{color:#D23C3C}.pill.watch{color:#B98200}
+.ft{color:#7D93AE;font-size:12.5px;margin-top:18px;text-align:center}
+@media (max-width:640px){.kpi{grid-template-columns:repeat(2,1fr)}}
+@media print{body{background:#fff}.w{padding:0}.card,.kpi div{break-inside:avoid}}
+</style></head><body><div class="w">
+<div class="hd">${logo?`<img src="${logo}" alt="KBS Sugar">`:""}<div><h1>ผลวิเคราะห์กระบวนการ โรงงาน ${esc(rec.factory)}</h1><p>ฤดูหีบ ${SEASON}, ข้อมูลถึงวันหีบที่ ${rec.day}, วิเคราะห์เมื่อ ${esc(thDate(rec.createdAt))}</p><p>KBS Sugar แผนกวิเคราะห์และกลยุทธ์</p></div></div>
+${rec.source==="demo"?`<div class="demo">ผลนี้วิเคราะห์จากข้อมูลจำลอง ใช้เพื่อสาธิตเท่านั้น</div>`:""}
+<div class="kpi"><div><small>Total loss</small><b>${fmt(L.total)}%</b></div><div><small>Milling loss</small><b>${fmt(L.mill)}%</b></div><div><small>กากตะกอน</small><b>${fmt(L.fc)}%</b></div><div><small>กากน้ำตาล</small><b>${fmt(L.mol)}%</b></div><div><small>ไม่ทราบสาเหตุ</small><b>${fmt(L.undet)}%</b></div></div>
+<div class="card ai"><h2>ผลวิเคราะห์โดย Claude</h2>${mdLite(rec.text||"")}</div>
+${rows?`<div class="card"><h2>พารามิเตอร์ที่ต้องจัดการ ณ เวลาที่วิเคราะห์</h2><div style="overflow-x:auto"><table><tr><th>สถานะ</th><th>พารามิเตอร์</th><th>เป้า</th><th>สะสม</th><th>7 วันล่าสุด</th><th>พยากรณ์ 7 วัน</th><th>โอกาสหลุด</th></tr>${rows}</table></div></div>`:""}
+<div class="ft">Loss หน่วย % pol ในอ้อย สร้างจาก Dashboard ควบคุมและพยากรณ์พารามิเตอร์กระบวนการ</div>
+</div></body></html>`;
+}
+async function downloadReport(rec){
+  const html=reportHTML(rec), d=new Date(rec.createdAt), stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}-${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}`;
+  const filename=`ผลวิเคราะห์-${rec.factory}-วันหีบ${rec.day}-${stamp}.html`;
+  if(downloadsCap){ try{ await downloadsCap.save({filename,data:new Blob([html],{type:"text/html"})}); return; }catch(e){ if(e&&(e.code==="declined"||e.code==="cancelled")) return; } }
+  try{ const url=URL.createObjectURL(new Blob([html],{type:"text/html"})); const a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); }catch(e){}
+}
+function renderSaved(){
+  const el=$("#savedList"); if(!el) return; const f=state.factory;
+  const list=state.saved.filter(r=>r.factory===f);
+  if(!db){ el.innerHTML=`<p class="muted">ล็อกอินเพื่อดูประวัติผลวิเคราะห์ หรือใช้ปุ่ม "บันทึกเป็นไฟล์ HTML" หลังได้ผลวิเคราะห์</p>`; return; }
+  if(!list.length){ el.innerHTML=`<p class="muted">ยังไม่มีผลวิเคราะห์ของโรงงาน ${f} กดปุ่มวิเคราะห์ด้านบนเพื่อเริ่ม</p>`; return; }
+  el.innerHTML=list.slice(0,15).map((r,i)=>{ const plain=(r.text||"").replace(/[#*>`-]/g,"").replace(/\s+/g," ").trim();
+    return `<div class="saved"><div><b>${esc(thDate(r.createdAt))}<span class="tag">วันหีบที่ ${r.day}</span>${r.source==="demo"?`<span class="tag demo">ข้อมูลจำลอง</span>`:""}</b><div class="snip">${esc(plain.slice(0,220))}</div></div>
+    <div class="row"><button class="btn ghost sm" data-v="${i}">ดู</button><button class="btn sm" data-d="${i}">HTML</button></div></div>`; }).join("");
+  el.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>viewRecord(list[+b.dataset.v]));
+  el.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>downloadReport(list[+b.dataset.d]));
+}
+function viewRecord(r){
+  if(chart){chart.destroy();chart=null;}
+  $("#dlgTitle").textContent=`ผลวิเคราะห์โรงงาน ${r.factory}`;
+  $("#dlgSub").textContent=`วันหีบที่ ${r.day}, วิเคราะห์เมื่อ ${thDate(r.createdAt)}${r.source==="demo"?", ข้อมูลจำลอง":""}`;
+  $("#dlgBody").innerHTML=`<div class="ai-out" style="max-height:none">${mdLite(r.text||"")}</div><div class="row" style="margin-top:14px"><button class="btn" id="dlgDl">บันทึกเป็นไฟล์ HTML</button></div>`;
+  $("#dlgDl").onclick=()=>downloadReport(r);
+  $("#dlg").showModal();
+}
+async function copyText(t){
+  try{ if(navigator.clipboard&&window.isSecureContext!==false){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
+  try{ const ta=document.createElement("textarea"); ta.value=t; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); const ok=document.execCommand("copy"); ta.remove(); return ok; }catch(e){ return false; }
+}
+async function handoffToClaude(){
+  const out=$("#aiOut"), stt=$("#aiState"), prompt=buildPrompt(state.factory);
+  const ok=await copyText(prompt);
+  out.innerHTML=`<p><b>${ok?"คัดลอกข้อมูลโรงงาน "+state.factory+" แล้ว":"คัดลอกอัตโนมัติไม่ได้ ให้คัดลอกข้อความในกล่องด้านล่างเอง"}</b></p>
+    <ol style="margin:6px 0 10px;padding-left:20px"><li>กดปุ่ม <b>เปิด Claude</b> (หรือเปิด claude.ai เอง)</li><li>คลิกช่องพิมพ์ แล้วกด Ctrl+V (มือถือ: กดค้างแล้วเลือกวาง)</li><li>กดส่ง Claude จะวิเคราะห์ในแชท</li></ol>
+    <div class="row" style="margin-bottom:10px"><a class="btn" href="https://claude.ai/new" target="_blank" rel="noopener">เปิด Claude</a><button class="btn ghost" id="copyAgain">คัดลอกอีกครั้ง</button></div>
+    <textarea readonly id="promptBox" aria-label="ข้อความสำหรับส่งให้ Claude">${esc(prompt)}</textarea>
+    <h4 style="margin:16px 0 4px">ได้คำตอบจาก Claude แล้ว</h4>
+    <p class="muted" style="margin:0 0 6px">คัดลอกคำตอบทั้งหมดในแชทมาวางที่นี่ แล้วกดบันทึก ผู้ใช้คนอื่นจะดูผลได้ และดาวน์โหลดเป็น HTML ได้</p>
+    <textarea id="pasteBox" placeholder="วางผลวิเคราะห์จาก Claude ที่นี่" aria-label="ผลวิเคราะห์จาก Claude"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn" id="pasteSave">บันทึกผลวิเคราะห์</button></div>
+    <div class="msg" id="pasteMsg"></div>`;
+  stt.textContent="";
+  $("#copyAgain").onclick=async()=>{ const r=await copyText(prompt); $("#copyAgain").textContent=r?"คัดลอกแล้ว":"คัดลอกไม่ได้"; if(!r){ const b=$("#promptBox"); b.focus(); b.select(); } };
+  $("#promptBox").onfocus=e=>e.target.select();
+  $("#pasteSave").onclick=()=>{ const txt=$("#pasteBox").value.trim(), m=$("#pasteMsg");
+    if(txt.length<30){ m.className="msg err"; m.textContent="วางผลวิเคราะห์จาก Claude ก่อน"; return; }
+    const rec=makeRecord(state.factory,txt,"pasted"); out.innerHTML=mdLite(txt); showResultActions(rec); saveRecord(rec); };
+}
+$("#aiBtn").onclick=async()=>{
+  const out=$("#aiOut"), stt=$("#aiState"), btn=$("#aiBtn");
+  if(!sampleFn){ return handoffToClaude(); }
+  if(aiAbort) aiAbort.abort(); aiAbort=new AbortController();
+  btn.disabled=true; stt.textContent="กำลังวิเคราะห์…"; out.innerHTML=`<p class="muted">กำลังคิด…</p>`;
+  try{ const r=await sampleFn(buildPrompt(state.factory),{signal:aiAbort.signal,modelTier:"default",onText:({text})=>{out.innerHTML=mdLite(text);}});
+    out.innerHTML=mdLite(r.text); stt.textContent=`วิเคราะห์โรงงาน ${state.factory} แล้ว`;
+    const rec=makeRecord(state.factory,r.text,"claude"); showResultActions(rec); saveRecord(rec); }
+  catch(e){ if(e&&e.code==="cancelled"){} else { stt.textContent=""; out.innerHTML=`<p class="msg err">${e&&e.code==="rate_limited"?"เรียกใช้บ่อยเกินไป รอสักครู่แล้วลองใหม่":e&&e.code==="not_granted"?"ไม่ได้อนุญาตให้หน้านี้ใช้ Claude":"วิเคราะห์ไม่สำเร็จ ลองอีกครั้ง"}</p>`+(e&&e.text?mdLite(e.text):""); } }
+  btn.disabled=false;
+};
+
+
+/* ---------- compare AB / C / S ---------- */
+state.cmpStation="all";
+const UNIT_ORDER=["A","B","AB","C","S"];
+const UCOL={A:"#1C6FD6",B:"#0EA5C6",AB:"#1C6FD6",C:"#16A34A",S:"#D97706"};
+const unitHead=u=>u==="A"?"AB ชุด A":u==="B"?"AB ชุด B":u;
+function margin(a){ if(!a||a.insufficient||a.todate==null) return null; if(a.t==null) return a.p.dir==="none"? -a.todate : null; const b=badness(a.p,a.t,a.todate); const scale=Math.abs(Array.isArray(a.t)?(a.t[1]-a.t[0]):a.t)||1; return -b/scale; }
+function renderCompare(){
+  let sh=""; for(const g of ["AB","C","S"]){ const {list}=analyses(g), L=lossParts(g), c=s=>list.filter(a=>a.status===s).length;
+    sh+=`<div class="box"><h4>โรงงาน ${g}${realCount(g)?"":` <span class="tag demo">ข้อมูลจำลอง</span>`}</h4><div class="big">${fmt(L.total)}%</div><div class="muted">Total loss</div>
+    <div class="row" style="margin-top:8px;gap:6px"><span class="pill bad">หลุด ${c("bad")}</span><span class="pill watch">เฝ้า ${c("watch")}</span><span class="pill ok">ในเป้า ${c("ok")}</span></div></div>`; }
+  $("#cmpSum").innerHTML=sh;
+  let fh=`<button class="chip" data-st="all" aria-pressed="${state.cmpStation==="all"}">ทุกสถานี</button>`;
+  for(const st of ["M","E","V","C"]) fh+=`<button class="chip" data-st="${st}" aria-pressed="${state.cmpStation===st}"><span class="sw" style="background:var(${ST[st].c})"></span>${ST[st].n} ${ST[st].name}</button>`;
+  $("#cmpFilters").innerHTML=fh;
+  $("#cmpFilters").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{state.cmpStation=c.dataset.st;renderCompare();});
+  let h="";
+  for(const st of ["M","E","V","C"]){ if(state.cmpStation!=="all"&&state.cmpStation!==st) continue;
+    const ps=P.filter(p=>p.st===st); const units=UNIT_ORDER.filter(u=>ps.some(p=>u in p.td));
+    h+=`<div class="stsec"><h3><span class="stno" style="background:var(${ST[st].c})">${ST[st].n}</span>${ST[st].full}</h3><div class="scroll"><table class="ctab"><tr><th>พารามิเตอร์</th>${units.map(u=>`<th>${unitHead(u)}</th>`).join("")}</tr>`;
+    for(const p of ps){
+      const cells=units.map(u=>({u,a:(u in p.td)?findA(UNIT_FACT[u],p.id,u):null}));
+      const ms=cells.map(c=>margin(c.a)); const valid=ms.filter(m=>m!=null); const best=valid.length>=2?Math.max(...valid):null;
+      h+=`<tr class="r" data-p="${p.id}" tabindex="0"><td><div class="pn">${esc(p.name)}<small>${p.u}${p.dir==="max"?", ยิ่งต่ำยิ่งดี":p.dir==="min"?", ยิ่งสูงยิ่งดี":p.dir==="range"?", ควรอยู่ในช่วง":", ยิ่งต่ำยิ่งดี"}</small></div></td>`+
+        cells.map((c,i)=>{ const a=c.a; if(!a) return `<td class="muted">–</td>`;
+          const cls=a.status==="bad"?"bad":a.status==="watch"?"watch":a.status==="ok"?"ok":"";
+          return `<td class="${cls}"><b>${fmt(a.todate,p.dec)}</b>${best!=null&&ms[i]===best?`<span class="star" title="ดีที่สุด">★</span>`:""}<span style="color:${trendColor(a)};margin-left:4px">${trendArrow(a)}</span><small>เป้า ${tgtText(p,a.t)}</small></td>`; }).join("")+`</tr>`;
+    }
+    h+=`</table></div></div>`; }
+  $("#cmpTables").innerHTML=h;
+  $("#cmpTables").querySelectorAll("tr.r").forEach(r=>{ r.onclick=()=>openCompare(r.dataset.p); r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();openCompare(r.dataset.p);}}; });
+}
+function openCompare(pid){
+  const p=PBY[pid]; const items=UNIT_ORDER.filter(u=>u in p.td).map(u=>({u,a:findA(UNIT_FACT[u],pid,u)})).filter(x=>x.a);
+  $("#dlgTitle").textContent=`เปรียบเทียบ ${p.name}`;
+  $("#dlgSub").textContent=`${ST[p.st].full}, หน่วย ${p.u}, เส้นทึบคือค่าเฉลี่ย 7 วัน เส้นประคือเป้าของแต่ละโรงงาน`;
+  const rows=items.map(({u,a})=>`<tr><td><span class="dot" style="background:${UCOL[u]};margin-right:8px"></span>${unitHead(u)}</td><td>${tgtText(p,a.t)}</td><td>${fmt(a.todate,p.dec)}</td><td>${a.insufficient?"–":fmt(a.last7,p.dec)}</td><td>${a.insufficient?"–":fmt(a.fc[6].m,p.dec)}</td><td>${a.insufficient||a.risk7==null?"–":Math.round(a.risk7*100)+"%"}</td><td><span class="pill ${a.status}">${a.status==="bad"?"หลุดเป้า":a.status==="watch"?"เฝ้าระวัง":a.status==="ok"?"ในเป้า":"ไม่มีเป้า"}</span></td></tr>`).join("");
+  $("#dlgBody").innerHTML=`<div class="chartbox"><canvas id="cchart" aria-label="กราฟเปรียบเทียบรายวัน"></canvas></div>
+    <div class="scroll" style="margin-top:14px"><table class="dict num"><tr><th>โรงงาน</th><th>เป้า</th><th>สะสม</th><th>7 วันล่าสุด</th><th>พยากรณ์ 7 วัน</th><th>โอกาสหลุด</th><th>สถานะ</th></tr>${rows}</table></div>`;
+  $("#dlg").showModal();
+  if(chart){chart.destroy();chart=null;} if(typeof Chart==="undefined") return;
+  const N=Math.max(...items.map(x=>x.a.y.length)), labels=Array.from({length:N},(_,i)=>i+1), ink=cssv("--ink2")||"#46617F", line=cssv("--line")||"#D3E1F0";
+  const ds=[];
+  for(const {u,a} of items){ const ma=[]; for(let i=0;i<N;i++){ const w=(a.y.slice(Math.max(0,i-6),i+1)).filter(v=>v!=null); ma.push(i<a.y.length&&w.length>=3?mean(w):null); }
+    ds.push({label:unitHead(u),data:ma,borderColor:UCOL[u],backgroundColor:UCOL[u],borderWidth:2.2,pointRadius:0,spanGaps:true});
+    const tv=a.t==null?[]:Array.isArray(a.t)?a.t:[a.t]; tv.forEach(tt=>ds.push({label:"_t"+u,data:new Array(N).fill(tt),borderColor:hexA(UCOL[u],.7),borderDash:[6,4],borderWidth:1.3,pointRadius:0})); }
+  chart=new Chart($("#cchart"),{type:"line",data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{labels:{color:ink,boxWidth:14,filter:i=>!i.text.startsWith("_")}},tooltip:{filter:i=>i.raw!=null&&!i.dataset.label.startsWith("_"),callbacks:{title:it=>`วันหีบที่ ${it[0].label}`,label:c=>`${c.dataset.label}: ${fmt(c.raw,p.dec)}`}}},
+    scales:{x:{ticks:{color:ink,maxTicksLimit:12},grid:{color:line},title:{display:true,text:"วันหีบ",color:ink}},y:{ticks:{color:ink},grid:{color:line}}}}});
+}
+/* ---------- navigation ---------- */
+function setTab(t){ state.tab=t; document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t)); document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="p-"+t); renderTab(); if(t==="params"||t==="compare") $("#p-"+t).scrollIntoView?.({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }
+function renderTab(){ ({overview:renderOverview,params:renderParams,compare:renderCompare,loss:renderLoss,data:renderData})[state.tab](); }
+function render(){ renderFactorySeg(); renderBanner(); renderHero(); renderTab(); }
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+function renderFactorySeg(){
+  $("#factorySeg").innerHTML=["AB","C","S"].map(g=>{ const {list}=analyses(g), L=lossParts(g), b=list.filter(a=>a.status==="bad").length, w=list.filter(a=>a.status==="watch").length;
+    return `<button data-f="${g}" aria-pressed="${g===state.factory}"><span class="fk">${g}</span><span class="fl">Total loss ${fmt(L.total)}%</span><span class="fs"><i class="b">หลุด ${b}</i><i class="w">เฝ้า ${w}</i></span></button>`; }).join("");
+}
+$("#factorySeg").addEventListener("click",e=>{ const b=e.target.closest("button[data-f]"); if(!b) return; state.factory=b.dataset.f; $("#entryFactory").dataset.touched=""; $("#entryDay").dataset.touched=""; $("#aiOut").innerHTML=`<p class="muted">ผลวิเคราะห์จะแสดงที่นี่ ใช้เวลาประมาณ 20–40 วินาที</p>`; $("#aiState").textContent=""; render(); });
+
+render();
+
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyAcic0Zilnx_S1eUfH7qwD40t6QfnAURT4",
+  authDomain: "kbs-control-parameter.firebaseapp.com",
+  projectId: "kbs-control-parameter",
+  storageBucket: "kbs-control-parameter.firebasestorage.app",
+  messagingSenderId: "861337784161",
+  appId: "1:861337784161:web:29312eaf15e757804fbf20"
+};
+const ALLOWED = /@kbs\.co\.th$/i;
+state.canEdit=false;
+$("#gateLogo").src=document.querySelector(".logo")?.src||"";
+let unsubs=[];
+function stopListeners(){ unsubs.forEach(u=>{try{u();}catch(e){}}); unsubs=[]; }
+function renderUser(u){
+  $("#userBox").innerHTML = u ? `<span title="${esc(u.email)}">${esc(u.email)}</span><span class="role">${state.canEdit?"แก้ไขได้":"ดูอย่างเดียว"}</span><button id="logoutBtn">ออก</button>` : "";
+  const b=$("#logoutBtn"); if(b) b.onclick=()=>firebase.auth().signOut();
+}
+if(typeof firebase==="undefined"){ $("#gate").hidden=false; $("#gateMsg").className="msg err"; $("#gateMsg").textContent="โหลด Firebase ไม่สำเร็จ ตรวจการเชื่อมต่ออินเทอร์เน็ต"; }
+else{
+  firebase.initializeApp(firebaseConfig);
+  const auth=firebase.auth(), fdb=firebase.firestore();
+  $("#loginBtn").onclick=async()=>{ const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({hd:"kbs.co.th",prompt:"select_account"});
+    $("#gateMsg").textContent=""; try{ await auth.signInWithPopup(p); }catch(e){ if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment") await auth.signInWithRedirect(p); else if(e.code!=="auth/popup-closed-by-user"){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent="ล็อกอินไม่สำเร็จ: "+e.code; } } };
+  auth.onAuthStateChanged(async u=>{
+    stopListeners(); db=null; state.dbReady=false; state.canEdit=false; state.real={AB:{},C:{},S:{}}; state.saved=[]; state.cache={};
+    if(!u){ $("#gate").hidden=false; renderUser(null); render(); return; }
+    if(!ALLOWED.test(u.email||"")){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent=`บัญชี ${u.email} ไม่ใช่บัญชี @kbs.co.th`; await auth.signOut(); return; }
+    $("#gate").hidden=true; db=fdb; state.dbReady=true;
+    try{ const ed=await fdb.collection("editors").doc(u.email).get(); state.canEdit=ed.exists; }catch(e){ state.canEdit=false; }
+    renderUser(u);
+    unsubs.push(fdb.collection("analyses").orderBy("createdAt","desc").limit(90).onSnapshot(s=>{ state.saved=s.docs.map(d=>d.data()); renderSaved(); },()=>{}));
+    for(const f of ["AB","C","S"]) unsubs.push(fdb.collection("factories").doc(f).collection("days").onSnapshot(s=>{
+      const data={}; s.forEach(d=>{ const x=d.data()||{}, day=x.day||+d.id; for(const k in (x.values||{})){ const v=x.values[k]; if(v!=null&&isFinite(v)) ((data[k] ||= {}))[day]=+v; } });
+      state.real[f]=data; state.cache[f]=null; render();
+    }, e=>{ $("#banner").className="banner"; $("#banner").innerHTML=`<span class="dot s-watch" style="margin-top:6px"></span><div><b>อ่านข้อมูลไม่ได้</b> ${esc(e.code==="permission-denied"?"บัญชีนี้ไม่มีสิทธิ์อ่านข้อมูล ตรวจ Firestore rules":"การเชื่อมต่อขัดข้อง")}</div>`; }));
+    render();
+  });
+}
+render();
+</script>
+</body>
+</html>
