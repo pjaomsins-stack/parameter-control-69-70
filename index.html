@@ -217,6 +217,12 @@ main.wrap{max-width:1240px;width:100%}
 .gate[hidden]{display:none}
 .gate-card{background:#fff;color:#0F2A4A;border-radius:18px;padding:28px 26px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4)}
 .gate-logo{width:110px;height:auto;margin:0 auto 10px;display:block}
+.pwf{display:flex;flex-direction:column;gap:10px;text-align:left;margin:14px 0 4px}
+.pwf label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#46617F}
+.pwf input{border:1px solid #D3E1F0;border-radius:9px;padding:10px 12px;font-size:15px;background:#F3F8FE;color:#0F2A4A}
+.pwf input:focus{outline:2px solid #1C6FD6;outline-offset:1px}
+.pwf .btn{justify-content:center;margin-top:4px;padding:11px}
+.gate .linkbtn{font-size:13px;margin-top:6px}
 .gate-card h2{margin:0 0 6px;font-size:20px}.gate-card p{color:#46617F;font-size:14px}
 .user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 10px;font-size:12.5px}
 .user span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -313,9 +319,14 @@ legend{font-weight:700;padding:0 6px}
   <div class="gate-card">
     <img class="gate-logo" alt="KBS Sugar" id="gateLogo">
     <h2>ควบคุมและพยากรณ์พารามิเตอร์กระบวนการ</h2>
-    <p>ล็อกอินด้วยบัญชี Google ของบริษัท (@kbs.co.th) เพื่อดูข้อมูลของทีม</p>
-    <button class="btn" id="loginBtn">ล็อกอินด้วย Google</button>
+    <p>เข้าสู่ระบบเพื่อดูข้อมูลของทีม</p>
+    <form id="pwForm" class="pwf" autocomplete="off">
+      <label>ชื่อผู้ใช้<input id="uName" name="username" autocomplete="username" required></label>
+      <label>รหัสผ่าน<input id="uPass" name="password" type="password" autocomplete="off" required></label>
+      <button class="btn" type="submit" id="pwBtn">เข้าสู่ระบบ</button>
+    </form>
     <p class="msg" id="gateMsg"></p>
+    <button class="linkbtn" id="loginBtn" type="button">หรือล็อกอินด้วย Google (@kbs.co.th)</button>
   </div>
 </div>
 <div class="app">
@@ -1176,13 +1187,15 @@ const firebaseConfig = {
   messagingSenderId: "861337784161",
   appId: "1:861337784161:web:29312eaf15e757804fbf20"
 };
-const ALLOWED = /@kbs\.co\.th$/i;
+const SHARED_DOMAIN = "kbs-control-parameter.firebaseapp.com"; // ชื่อผู้ใช้ Stat-29 -> stat-29@kbs-control-parameter.firebaseapp.com
+const ALLOWED = /(@kbs\.co\.th|@kbs-control-parameter\.firebaseapp\.com)$/i;
+const showName = email => (email||"").toLowerCase().endsWith("@"+SHARED_DOMAIN) ? email.split("@")[0] : email;
 state.canEdit=false;
 $("#gateLogo").src=document.querySelector(".logo")?.src||"";
 let unsubs=[];
 function stopListeners(){ unsubs.forEach(u=>{try{u();}catch(e){}}); unsubs=[]; }
 function renderUser(u){
-  $("#userBox").innerHTML = u ? `<span title="${esc(u.email)}">${esc(u.email)}</span><span class="role">${state.canEdit?"แก้ไขได้":"ดูอย่างเดียว"}</span><button id="logoutBtn">ออก</button>` : "";
+  $("#userBox").innerHTML = u ? `<span title="${esc(u.email)}">${esc(showName(u.email))}</span><span class="role">${state.canEdit?"แก้ไขได้":"ดูอย่างเดียว"}</span><button id="logoutBtn">ออก</button>` : "";
   const b=$("#logoutBtn"); if(b) b.onclick=()=>firebase.auth().signOut();
 }
 if(typeof firebase==="undefined"){ $("#gate").hidden=false; $("#gateMsg").className="msg err"; $("#gateMsg").textContent="โหลด Firebase ไม่สำเร็จ ตรวจการเชื่อมต่ออินเทอร์เน็ต"; }
@@ -1190,11 +1203,22 @@ else{
   firebase.initializeApp(firebaseConfig);
   const auth=firebase.auth(), fdb=firebase.firestore();
   $("#loginBtn").onclick=async()=>{ const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({hd:"kbs.co.th",prompt:"select_account"});
-    $("#gateMsg").textContent=""; try{ await auth.signInWithPopup(p); }catch(e){ if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment") await auth.signInWithRedirect(p); else if(e.code!=="auth/popup-closed-by-user"){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent="ล็อกอินไม่สำเร็จ: "+e.code; } } };
-  auth.onAuthStateChanged(async u=>{
+    $("#gateMsg").textContent=""; try{ await auth.signInWithPopup(p); }catch(e){ if(e.code==="auth/popup-blocked"){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent="เบราว์เซอร์บล็อกหน้าต่างล็อกอิน กดอนุญาต pop-up แล้วลองใหม่"; } else if(e.code!=="auth/popup-closed-by-user"){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent= e.code==="auth/unauthorized-domain" ? "ล็อกอินด้วย Google ยังใช้ไม่ได้บนโดเมนนี้ (ต้องเพิ่มใน Authorized domains) ใช้ชื่อผู้ใช้และรหัสผ่านแทน" : "ล็อกอินไม่สำเร็จ: "+e.code; } } };
+  const AUTH_ERR={"auth/invalid-credential":"ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง","auth/wrong-password":"ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง","auth/user-not-found":"ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง","auth/invalid-email":"ชื่อผู้ใช้ไม่ถูกต้อง","auth/too-many-requests":"ลองผิดหลายครั้งเกินไป รอสักครู่แล้วลองใหม่","auth/operation-not-allowed":"ยังไม่ได้เปิดการล็อกอินแบบรหัสผ่านใน Firebase","auth/network-request-failed":"เชื่อมต่ออินเทอร์เน็ตไม่ได้"};
+  $("#pwForm").onsubmit=async e=>{ e.preventDefault(); const m=$("#gateMsg"), btn=$("#pwBtn"); m.className="msg"; m.textContent="";
+    const name=$("#uName").value.trim().toLowerCase(), pass=$("#uPass").value;
+    if(!name||!pass){ m.className="msg err"; m.textContent="กรอกชื่อผู้ใช้และรหัสผ่าน"; return; }
+    const email = name.includes("@") ? name : `${name}@${SHARED_DOMAIN}`;
+    btn.disabled=true; btn.textContent="กำลังเข้าสู่ระบบ…";
+    try{ await auth.signInWithEmailAndPassword(email,pass); $("#uPass").value=""; }
+    catch(err){ m.className="msg err"; m.textContent=AUTH_ERR[err.code]||("เข้าสู่ระบบไม่สำเร็จ: "+err.code); }
+    btn.disabled=false; btn.textContent="เข้าสู่ระบบ"; };
+  // ไม่จำการล็อกอิน: ต้องใส่รหัสใหม่ทุกครั้งที่เปิดหรือรีเฟรชหน้า
+  const ready = auth.setPersistence(firebase.auth.Auth.Persistence.NONE).then(()=>auth.signOut()).catch(()=>{});
+  ready.then(()=>auth.onAuthStateChanged(async u=>{
     stopListeners(); db=null; state.dbReady=false; state.canEdit=false; state.real={AB:{},C:{},S:{}}; state.saved=[]; state.cache={};
     if(!u){ $("#gate").hidden=false; renderUser(null); render(); return; }
-    if(!ALLOWED.test(u.email||"")){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent=`บัญชี ${u.email} ไม่ใช่บัญชี @kbs.co.th`; await auth.signOut(); return; }
+    if(!ALLOWED.test(u.email||"")){ $("#gateMsg").className="msg err"; $("#gateMsg").textContent=`บัญชี ${u.email} ไม่มีสิทธิ์เข้าใช้`; await auth.signOut(); return; }
     $("#gate").hidden=true; db=fdb; state.dbReady=true;
     try{ const ed=await fdb.collection("editors").doc(u.email).get(); state.canEdit=ed.exists; }catch(e){ state.canEdit=false; }
     renderUser(u);
@@ -1204,7 +1228,7 @@ else{
       state.real[f]=data; state.cache[f]=null; render();
     }, e=>{ $("#banner").className="banner"; $("#banner").innerHTML=`<span class="dot s-watch" style="margin-top:6px"></span><div><b>อ่านข้อมูลไม่ได้</b> ${esc(e.code==="permission-denied"?"บัญชีนี้ไม่มีสิทธิ์อ่านข้อมูล ตรวจ Firestore rules":"การเชื่อมต่อขัดข้อง")}</div>`; }));
     render();
-  });
+  }));
 }
 render();
 </script>
